@@ -10,3 +10,8 @@ target_compile_options(Graphics_Project PRIVATE -Wall)
 # glfw
 add_subdirectory(lib/glfw EXCLUDE_FROM_ALL)
 target_link_libraries(Graphics_Project PRIVATE glfw)
+
+# glew
+add_definitions(-DGLEW_STATIC)
+add_subdirectory(lib/glew EXCLUDE_FROM_ALL)
+target_link_libraries(Graphics_Project PRIVATE libglew_static)
