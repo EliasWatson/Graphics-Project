@@ -15,3 +15,7 @@ target_link_libraries(Graphics_Project PRIVATE glfw)
 add_definitions(-DGLEW_STATIC)
 add_subdirectory(lib/glew EXCLUDE_FROM_ALL)
 target_link_libraries(Graphics_Project PRIVATE libglew_static)
+
+# glm
+add_subdirectory(lib/glm EXCLUDE_FROM_ALL)
+target_link_libraries(Graphics_Project PRIVATE glm)
