@@ -4,15 +4,19 @@
 
 #include "shader.hpp"
 
+// Constants
 #define numVAOs 1
 
+// Globals
 GLuint renderingProgram;
 GLuint vao[numVAOs];
 
+// Prototypes
 void init(GLFWwindow* window);
-void display(GLFWwindow* window, double current_time);
+void display(GLFWwindow* window, double currentTime);
 GLuint createShaderProgram();
 
+// Methods
 int main() {
     // Initialize GLFW
     if(!glfwInit()) exit(EXIT_FAILURE);
@@ -48,11 +52,17 @@ void init(GLFWwindow* window) {
     glBindVertexArray(vao[0]);
 }
 
-void display(GLFWwindow* window, double current_time) {
+void display(GLFWwindow* window, double currentTime) {
+    // Clear buffers
     glClearColor(0.0, 0.0, 0.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
 
+    // Load shader
     glUseProgram(renderingProgram);
+    GLuint uTimeLoc = glGetUniformLocation(renderingProgram, "time");
+    glProgramUniform1f(renderingProgram, uTimeLoc, currentTime);
+
+    // Render frame
     glPointSize(30.0f);
     glDrawArrays(GL_TRIANGLES, 0, 3);
 }
