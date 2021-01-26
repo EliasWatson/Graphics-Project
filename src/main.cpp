@@ -2,6 +2,8 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#include "shader.hpp"
+
 #define numVAOs 1
 
 GLuint renderingProgram;
@@ -55,33 +57,21 @@ void display(GLFWwindow* window, double current_time) {
 }
 
 GLuint createShaderProgram() {
-    const char* vshaderSource = "           \
-        #version 430                        \
-        void main() {                       \
-            gl_Position = vec4(0, 0, 0, 1); \
-        }                                   \
-    ";
+    const char* vshPath = "../../assets/shaders/basic.vsh";
+    const char* fshPath = "../../assets/shaders/basic.fsh";
 
-    const char* fshaderSource = "           \
-        #version 430                        \
-        out vec4 color;                     \
-        void main() {                       \
-            color = vec4(0, 0, 1, 1);       \
-        }                                   \
-    ";
+    GLuint shaders[2];
+    if(!loadShaderFromFile(&shaders[0], GL_VERTEX_SHADER, vshPath)
+        || !loadShaderFromFile(&shaders[1], GL_FRAGMENT_SHADER, fshPath)) {
+        exit(EXIT_FAILURE);
+        return 0; // Hopefully unreachable
+    }
 
-    GLuint vShader = glCreateShader(GL_VERTEX_SHADER);
-    GLuint fShader = glCreateShader(GL_FRAGMENT_SHADER);
+    GLuint program;
+    if(!createShaderProgram(&program, shaders, 2)) {
+        exit(EXIT_FAILURE);
+        return 0; // Hopefully unreachable
+    }
 
-    glShaderSource(vShader, 1, &vshaderSource, NULL);
-    glShaderSource(fShader, 1, &fshaderSource, NULL);
-    glCompileShader(vShader);
-    glCompileShader(fShader);
-
-    GLuint vfProgram = glCreateProgram();
-    glAttachShader(vfProgram, vShader);
-    glAttachShader(vfProgram, fShader);
-    glLinkProgram(vfProgram);
-
-    return vfProgram;
+    return program;
 }
