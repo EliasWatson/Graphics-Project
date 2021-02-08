@@ -81,8 +81,11 @@ void init(GLFWwindow* window) {
 }
 
 void display(GLFWwindow* window, double currentTime) {
+    cubeLocX = cosf((float) currentTime) * 2.0f;
+    cubeLocY = sinf((float) currentTime) * 2.0f;
+
     // Clear buffers
-    glClear(GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Load shader
     glUseProgram(renderingProgram);
