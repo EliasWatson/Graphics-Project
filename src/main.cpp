@@ -13,6 +13,7 @@
 // Constants
 #define NUM_VAO 1
 #define NUM_VBO 2
+#define NUM_CUBES 10000
 
 // Globals
 float cameraFOV;
@@ -23,10 +24,10 @@ GLuint renderingProgram;
 GLuint vao[NUM_VAO];
 GLuint vbo[NUM_VBO];
 
-GLuint mvLoc, projLoc;
+GLuint vLoc, projLoc, tfLoc;
 int width, height;
 float aspect;
-glm::mat4 pMat, vMat, mMat, mvMat;
+glm::mat4 pMat, vMat;
 
 // Prototypes
 void init(GLFWwindow* window);
@@ -70,7 +71,7 @@ void init(GLFWwindow* window) {
 
     cameraX = 0.0f;
     cameraY = 0.0f;
-    cameraZ = 8.0f;
+    cameraZ = 400.0f;
 
     cubeLocX =  0.0f;
     cubeLocY = -2.0f;
@@ -81,30 +82,28 @@ void init(GLFWwindow* window) {
 }
 
 void display(GLFWwindow* window, double currentTime) {
-    cubeLocX = cosf((float) currentTime) * 2.0f;
-    cubeLocY = sinf((float) currentTime) * 2.0f;
-
     // Clear buffers
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Load shader
     glUseProgram(renderingProgram);
-    mvLoc = glGetUniformLocation(renderingProgram, "mv_matrix");
+    vLoc = glGetUniformLocation(renderingProgram, "v_matrix");
     projLoc = glGetUniformLocation(renderingProgram, "proj_matrix");
+    tfLoc = glGetUniformLocation(renderingProgram, "tf");
 
     // Build perspective matrix
     glfwGetFramebufferSize(window, &width, &height);
+    glViewport(0, 0, width, height);
     aspect = (float) width / (float) height;
     pMat = glm::perspective(glm::radians(cameraFOV), aspect, 0.1f, 1000.0f);
 
-    // Build view matrix, model matrix, and model-view matrix
+    // Build view matrix
     vMat = glm::translate(glm::mat4(1.0f), glm::vec3(-cameraX, -cameraY, -cameraZ));
-    mMat = glm::translate(glm::mat4(1.0f), glm::vec3(cubeLocX, cubeLocY, cubeLocZ));
-    mvMat = vMat * mMat;
 
-    // Copy matrices to uniforms
-    glUniformMatrix4fv(mvLoc, 1, GL_FALSE, glm::value_ptr(mvMat));
+    // Copy to uniforms
+    glUniformMatrix4fv(vLoc, 1, GL_FALSE, glm::value_ptr(vMat));
     glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(pMat));
+    glUniform1f(tfLoc, float(currentTime));
 
     // Bind VBO to shader vertex attribute
     glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
@@ -114,7 +113,7 @@ void display(GLFWwindow* window, double currentTime) {
     // Draw model
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+    glDrawArraysInstanced(GL_TRIANGLES, 0, 36, NUM_CUBES);
 }
 
 void createVertices() {
