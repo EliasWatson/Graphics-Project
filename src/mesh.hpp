@@ -6,18 +6,20 @@
 #include <vector>
 #include <stack>
 
+#include "shader.hpp"
+
 struct mesh {
     glm::vec3 position, rotationAxis, scale;
     float rotation;
 
     GLuint vbo;
     GLsizei vertexCount;
-    GLuint shader;
 
+    shader shaderProgram;
     bool invertBackface;
 
-    mesh();
-    int render(std::vector<GLuint>* uniformLocs, std::stack<glm::mat4>* matrixStack, glm::mat4 perspectiveMatrix, float currentTime);
+    mesh(shader shaderProgram);
+    int render(std::stack<glm::mat4>* matrixStack, glm::mat4 perspectiveMatrix, float currentTime);
 };
 
 #endif

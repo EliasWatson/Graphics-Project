@@ -23,11 +23,10 @@ float cameraFOV;
 float cameraX, cameraY, cameraZ;
 std::vector<mesh> meshes;
 
-GLuint renderingProgram;
+shader shaderProgram;
 GLuint vao[NUM_VAO];
 GLuint vbo[NUM_VBO];
 
-std::vector<GLuint> uniformLocs;
 int width, height;
 float aspect;
 
@@ -39,8 +38,8 @@ void init(GLFWwindow* window);
 void window_resize(GLFWwindow* window, int width, int height);
 void display(GLFWwindow* window, double currentTime);
 
+void loadShaders();
 void createMeshes();
-GLuint createShaderProgram();
 
 // Methods
 int main() {
@@ -79,7 +78,7 @@ void init(GLFWwindow* window) {
     cameraY =  0.0f;
     cameraZ = 10.0f;
 
-    renderingProgram = createShaderProgram();
+    loadShaders();
     createMeshes();
 
     glfwGetFramebufferSize(window, &width, &height);
@@ -104,14 +103,6 @@ void display(GLFWwindow* window, double currentTime) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_CULL_FACE);
 
-    // Load shader
-    glUseProgram(renderingProgram);
-
-    while(uniformLocs.size() < 3) uniformLocs.push_back(0);
-    uniformLocs[0] = glGetUniformLocation(renderingProgram, "mv_matrix");
-    uniformLocs[1] = glGetUniformLocation(renderingProgram, "proj_matrix");
-    uniformLocs[2] = glGetUniformLocation(renderingProgram, "tf");
-
     // Build view matrix
     vMat = glm::translate(glm::mat4(1.0f), glm::vec3(-cameraX, -cameraY, -cameraZ));
     mvStack.push(vMat);
@@ -127,9 +118,23 @@ void display(GLFWwindow* window, double currentTime) {
 
     // Render meshes
     for(mesh m : meshes) {
-        int matrixCount = m.render(&uniformLocs, &mvStack, pMat, (float) currentTime);
+        int matrixCount = m.render(&mvStack, pMat, (float) currentTime);
         for(; matrixCount > 1; --matrixCount) mvStack.pop();
     }
+}
+
+void loadShaders() {
+    std::vector<shader_source> src;
+    src.push_back({GL_VERTEX_SHADER, "../../assets/shaders/basic.vsh"});
+    src.push_back({GL_FRAGMENT_SHADER, "../../assets/shaders/basic.fsh"});
+
+    std::vector<shader_uniform> uniforms;
+    uniforms.push_back({shader_uniform::MAT4, "mv_matrix"});
+    uniforms.push_back({shader_uniform::MAT4, "proj_matrix"});
+    uniforms.push_back({shader_uniform::FLOAT, "tf"});
+
+    shaderProgram = shader(src, uniforms);
+    if(!shaderProgram.compiled) exit(EXIT_FAILURE);
 }
 
 void createMeshes() {
@@ -168,54 +173,31 @@ void createMeshes() {
     glBufferData(GL_ARRAY_BUFFER, sizeof(pyramidPositions), pyramidPositions, GL_STATIC_DRAW);
 
     // Create pyramid sun
-    mesh pyramid = mesh();
+    mesh pyramid = mesh(shaderProgram);
 
     pyramid.rotationAxis = glm::vec3(1.0f, 0.0f, 0.0f);
     pyramid.vbo = vbo[1];
     pyramid.vertexCount = sizeof(pyramidPositions) / sizeof(float);
-    pyramid.shader = renderingProgram;
 
     meshes.push_back(pyramid);
 
     // Create cube planet
-    mesh cubePlanet = mesh();
+    mesh cubePlanet = mesh(shaderProgram);
 
     cubePlanet.vbo = vbo[0];
     cubePlanet.vertexCount = sizeof(cubePositions) / sizeof(float);
-    cubePlanet.shader = renderingProgram;
     cubePlanet.invertBackface = true;
 
     meshes.push_back(cubePlanet);
 
     // Create cube moon
-    mesh cubeMoon = mesh();
+    mesh cubeMoon = mesh(shaderProgram);
     cubeMoon.rotationAxis = glm::vec3(0.0f, 0.0f, 1.0f);
     cubeMoon.scale = glm::vec3(0.25f, 0.25f, 0.25f);
 
     cubeMoon.vbo = vbo[0];
     cubeMoon.vertexCount = sizeof(cubePositions) / sizeof(float);
-    cubeMoon.shader = renderingProgram;
     cubeMoon.invertBackface = true;
 
     meshes.push_back(cubeMoon);
-}
-
-GLuint createShaderProgram() {
-    const char* vshPath = "../../assets/shaders/basic.vsh";
-    const char* fshPath = "../../assets/shaders/basic.fsh";
-
-    GLuint shaders[2];
-    if(!loadShaderFromFile(&shaders[0], GL_VERTEX_SHADER, vshPath)
-        || !loadShaderFromFile(&shaders[1], GL_FRAGMENT_SHADER, fshPath)) {
-        exit(EXIT_FAILURE);
-        return 0; // Hopefully unreachable
-    }
-
-    GLuint program;
-    if(!createShaderProgram(&program, shaders, 2)) {
-        exit(EXIT_FAILURE);
-        return 0; // Hopefully unreachable
-    }
-
-    return program;
 }

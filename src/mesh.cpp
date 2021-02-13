@@ -3,20 +3,23 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-mesh::mesh() {
-    position = glm::vec3(0.0f, 0.0f, 0.0f);
-    rotationAxis = glm::vec3(0.0f, 1.0f, 0.0f);
-    scale = glm::vec3(1.0f, 1.0f, 1.0f);
-    rotation = 0.0f;
+mesh::mesh(shader shaderProgram) {
+    this->position = glm::vec3(0.0f, 0.0f, 0.0f);
+    this->rotationAxis = glm::vec3(0.0f, 1.0f, 0.0f);
+    this->scale = glm::vec3(1.0f, 1.0f, 1.0f);
+    this->rotation = 0.0f;
 
-    vbo = 0;
-    vertexCount = 0;
-    shader = 0;
+    this->vbo = 0;
+    this->vertexCount = 0;
 
-    invertBackface = false;
+    this->shaderProgram = shaderProgram;
+    this->invertBackface = false;
 }
 
-int mesh::render(std::vector<GLuint>* uniformLocs, std::stack<glm::mat4>* matrixStack, glm::mat4 perspectiveMatrix, float currentTime) {
+int mesh::render(std::stack<glm::mat4>* matrixStack, glm::mat4 perspectiveMatrix, float currentTime) {
+    // Load shader
+    std::vector<GLuint>* uniformLocs = this->shaderProgram.use();
+
     // Build matrices
     matrixStack->push(matrixStack->top());
     matrixStack->top() *= glm::translate(glm::mat4(1.0f), this->position);

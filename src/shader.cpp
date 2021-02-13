@@ -3,9 +3,45 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <vector>
 
-bool loadShader(GLuint* id, GLenum type, const char* src) {
+shader::shader(std::vector<shader_source> src, std::vector<shader_uniform> uniforms) {
+    std::vector<GLuint> compiledShaders;
+    for(shader_source s : src) {
+        GLuint sid;
+        if(!loadShaderFromFile(&sid, s.type, s.path)) {
+            return;
+        }
+        compiledShaders.push_back(sid);
+    }
+
+    if(!createShaderProgram(&this->id, &compiledShaders[0], src.size())) {
+        return;
+    }
+
+    compiled = true;
+    this->uniforms = uniforms;
+    this->uniformLocs = std::vector<GLuint>(uniforms.size());
+}
+
+std::vector<GLuint>* shader::use() {
+    glUseProgram(this->id);
+
+    if(!this->updatedThisFrame) {
+        for(int i = 0; i < this->uniformLocs.size(); ++i) {
+            shader_uniform uniform = this->uniforms[i];
+            this->uniformLocs[i] = glGetUniformLocation(this->id, uniform.name);
+        }
+        this->updatedThisFrame = true;
+    }
+
+    return &this->uniformLocs;
+}
+
+void shader::reset() {
+    this->updatedThisFrame = false;
+}
+
+bool shader::loadShader(GLuint* id, GLenum type, const char* src) {
     // Create shader
     *id = glCreateShader(type);
 
@@ -29,7 +65,7 @@ bool loadShader(GLuint* id, GLenum type, const char* src) {
     return true;
 }
 
-bool loadShaderFromFile(GLuint* id, GLenum type, const char* path) {
+bool shader::loadShaderFromFile(GLuint* id, GLenum type, const char* path) {
     std::ifstream stream(path);
     std::string source(
         (std::istreambuf_iterator<char>(stream)),
@@ -38,7 +74,7 @@ bool loadShaderFromFile(GLuint* id, GLenum type, const char* path) {
     return loadShader(id, type, source.c_str());
 }
 
-bool createShaderProgram(GLuint* id, GLuint* shaders, int numShaders) {
+bool shader::createShaderProgram(GLuint* id, GLuint* shaders, int numShaders) {
     // Create Program
     *id = glCreateProgram();
 
