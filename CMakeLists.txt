@@ -5,6 +5,8 @@ add_executable(Graphics_Project
     src/main.cpp
     src/shader.hpp
     src/shader.cpp
+    src/mesh.hpp
+    src/mesh.cpp
 )
 set_property(TARGET Graphics_Project PROPERTY CXX_STANDARD 11)
 #target_compile_options(Graphics_Project PRIVATE -Wall)

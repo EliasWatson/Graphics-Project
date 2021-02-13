@@ -4,12 +4,14 @@
 #include <string>
 #include <fstream>
 #include <stack>
+#include <vector>
 #include <cmath>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "shader.hpp"
+#include "mesh.hpp"
 
 // Constants
 #define NUM_VAO 1
@@ -19,14 +21,13 @@
 // Globals
 float cameraFOV;
 float cameraX, cameraY, cameraZ;
-float cubeLocX, cubeLocY, cubeLocZ;
-float pyraLocX, pyraLocY, pyraLocZ;
+std::vector<mesh> meshes;
 
 GLuint renderingProgram;
 GLuint vao[NUM_VAO];
 GLuint vbo[NUM_VBO];
 
-GLuint mvLoc, projLoc, tfLoc;
+std::vector<GLuint> uniformLocs;
 int width, height;
 float aspect;
 
@@ -38,7 +39,7 @@ void init(GLFWwindow* window);
 void window_resize(GLFWwindow* window, int width, int height);
 void display(GLFWwindow* window, double currentTime);
 
-void createVertices();
+void createMeshes();
 GLuint createShaderProgram();
 
 // Methods
@@ -78,16 +79,8 @@ void init(GLFWwindow* window) {
     cameraY =  0.0f;
     cameraZ = 10.0f;
 
-    cubeLocX =  0.0f;
-    cubeLocY = -2.0f;
-    cubeLocZ =  0.0f;
-
-    pyraLocX = 3.0f;
-    pyraLocY = 3.0f;
-    pyraLocZ = 0.0f;
-
     renderingProgram = createShaderProgram();
-    createVertices();
+    createMeshes();
 
     glfwGetFramebufferSize(window, &width, &height);
     window_resize(window, width, height);
@@ -113,98 +106,33 @@ void display(GLFWwindow* window, double currentTime) {
 
     // Load shader
     glUseProgram(renderingProgram);
-    mvLoc = glGetUniformLocation(renderingProgram, "mv_matrix");
-    projLoc = glGetUniformLocation(renderingProgram, "proj_matrix");
-    tfLoc = glGetUniformLocation(renderingProgram, "tf");
+
+    while(uniformLocs.size() < 3) uniformLocs.push_back(0);
+    uniformLocs[0] = glGetUniformLocation(renderingProgram, "mv_matrix");
+    uniformLocs[1] = glGetUniformLocation(renderingProgram, "proj_matrix");
+    uniformLocs[2] = glGetUniformLocation(renderingProgram, "tf");
 
     // Build view matrix
     vMat = glm::translate(glm::mat4(1.0f), glm::vec3(-cameraX, -cameraY, -cameraZ));
     mvStack.push(vMat);
 
-    {
-        // Build matrices
-        mvStack.push(mvStack.top());
-        mvStack.top() *= glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-        mvStack.push(mvStack.top());
-        mvStack.top() *= glm::rotate(glm::mat4(1.0f), (float) currentTime, glm::vec3(1.0f, 0.0f, 0.0f));
+    // Update meshes
+    meshes[0].rotation = (float) currentTime;
 
-        // Copy to uniforms
-        glUniformMatrix4fv(mvLoc, 1, GL_FALSE, glm::value_ptr(mvStack.top()));
-        glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(pMat));
-        glUniform1f(tfLoc, float(currentTime));
+    meshes[1].position = glm::vec3(sin((float) currentTime) * 4.0f, 0.0f, cos((float) currentTime) * 4.0f);
+    meshes[1].rotation = (float) currentTime;
 
-        // Bind VBO to shader vertex attribute
-        glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-        glEnableVertexAttribArray(0);
+    meshes[2].position = glm::vec3(0.0f, sin((float) currentTime) * 2.0f, cos((float) currentTime) * 2.0f);
+    meshes[2].rotation = (float) currentTime;
 
-        // Draw model
-        glEnable(GL_DEPTH_TEST);
-        glDepthFunc(GL_LEQUAL);
-        glDrawArrays(GL_TRIANGLES, 0, 18);
-
-        // Remove rotation
-        mvStack.pop();
+    // Render meshes
+    for(mesh m : meshes) {
+        int matrixCount = m.render(&uniformLocs, &mvStack, pMat, (float) currentTime);
+        for(; matrixCount > 1; --matrixCount) mvStack.pop();
     }
-
-    {
-        // Build matrices
-        mvStack.push(mvStack.top());
-        mvStack.top() *= glm::translate(glm::mat4(1.0f), glm::vec3(sin((float) currentTime) * 4.0f, 0.0f, cos((float) currentTime) * 4.0f));
-        mvStack.push(mvStack.top());
-        mvStack.top() *= glm::rotate(glm::mat4(1.0f), (float) currentTime, glm::vec3(0.0f, 1.0f, 0.0f));
-
-        // Copy to uniforms
-        glUniformMatrix4fv(mvLoc, 1, GL_FALSE, glm::value_ptr(mvStack.top()));
-        glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(pMat));
-        glUniform1f(tfLoc, float(currentTime));
-
-        // Bind VBO to shader vertex attribute
-        glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-        glEnableVertexAttribArray(0);
-
-        // Draw model
-        glEnable(GL_DEPTH_TEST);
-        glDepthFunc(GL_LEQUAL);
-        glFrontFace(GL_CW);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-
-        // Remove rotation
-        mvStack.pop();
-    }
-
-    {
-        // Build matrices
-        mvStack.push(mvStack.top());
-        mvStack.top() *= glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, sin((float) currentTime) * 2.0f, cos((float) currentTime) * 2.0f));
-        mvStack.top() *= glm::rotate(glm::mat4(1.0f), (float) currentTime, glm::vec3(0.0f, 0.0f, 1.0f));
-        mvStack.top() *= glm::scale(glm::mat4(1.0f), glm::vec3(0.25f, 0.25f, 0.25f));
-
-        // Copy to uniforms
-        glUniformMatrix4fv(mvLoc, 1, GL_FALSE, glm::value_ptr(mvStack.top()));
-        glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(pMat));
-        glUniform1f(tfLoc, float(currentTime));
-
-        // Bind VBO to shader vertex attribute
-        glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-        glEnableVertexAttribArray(0);
-
-        // Draw model
-        glEnable(GL_DEPTH_TEST);
-        glDepthFunc(GL_LEQUAL);
-        glFrontFace(GL_CW);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-
-        // Remove transformation
-        mvStack.pop();
-    }
-
-    while(!mvStack.empty()) mvStack.pop();
 }
 
-void createVertices() {
+void createMeshes() {
     float cubePositions[108] = {
         -1.0f,  1.0f, -1.0f, -1.0f, -1.0f, -1.0f,  1.0f, -1.0f, -1.0f,
          1.0f, -1.0f, -1.0f,  1.0f,  1.0f, -1.0f, -1.0f,  1.0f, -1.0f,
@@ -238,6 +166,38 @@ void createVertices() {
 
     glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(pyramidPositions), pyramidPositions, GL_STATIC_DRAW);
+
+    // Create pyramid sun
+    mesh pyramid = mesh();
+
+    pyramid.rotationAxis = glm::vec3(1.0f, 0.0f, 0.0f);
+    pyramid.vbo = vbo[1];
+    pyramid.vertexCount = sizeof(pyramidPositions) / sizeof(float);
+    pyramid.shader = renderingProgram;
+
+    meshes.push_back(pyramid);
+
+    // Create cube planet
+    mesh cubePlanet = mesh();
+
+    cubePlanet.vbo = vbo[0];
+    cubePlanet.vertexCount = sizeof(cubePositions) / sizeof(float);
+    cubePlanet.shader = renderingProgram;
+    cubePlanet.invertBackface = true;
+
+    meshes.push_back(cubePlanet);
+
+    // Create cube moon
+    mesh cubeMoon = mesh();
+    cubeMoon.rotationAxis = glm::vec3(0.0f, 0.0f, 1.0f);
+    cubeMoon.scale = glm::vec3(0.25f, 0.25f, 0.25f);
+
+    cubeMoon.vbo = vbo[0];
+    cubeMoon.vertexCount = sizeof(cubePositions) / sizeof(float);
+    cubeMoon.shader = renderingProgram;
+    cubeMoon.invertBackface = true;
+
+    meshes.push_back(cubeMoon);
 }
 
 GLuint createShaderProgram() {
