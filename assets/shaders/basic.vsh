@@ -2,7 +2,7 @@
 
 layout (location = 0) in vec3 position;
 
-uniform mat4 v_matrix;
+uniform mat4 mv_matrix;
 uniform mat4 proj_matrix;
 uniform float tf;
 
@@ -14,6 +14,7 @@ mat4 buildRotateZ(float rad);
 mat4 buildTranslate(vec3 pos);
 
 void main() {
+    /*
     float i = gl_InstanceID + tf;
     vec3 offset = vec3(
         sin(203.0 * i/8000.0),
@@ -28,6 +29,7 @@ void main() {
 
     mat4 m_matrix = translate * rotX * rotY * rotZ;
     mat4 mv_matrix = v_matrix * m_matrix;
+    */
 
     gl_Position = proj_matrix * mv_matrix * vec4(position, 1.0);
     vertex_color = position.xyz * 0.5 + 0.5;
