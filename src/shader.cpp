@@ -4,7 +4,11 @@
 #include <fstream>
 #include <string>
 
-shader::shader(std::vector<shader_source> src, std::vector<shader_uniform> uniforms) {
+shader::shader(
+    std::vector<shader_source> src,
+    std::vector<shader_attribute> attributes,
+    std::vector<shader_uniform> uniforms
+) {
     std::vector<GLuint> compiledShaders;
     for(shader_source s : src) {
         GLuint sid;
@@ -14,16 +18,17 @@ shader::shader(std::vector<shader_source> src, std::vector<shader_uniform> unifo
         compiledShaders.push_back(sid);
     }
 
-    if(!createShaderProgram(&this->id, &compiledShaders[0], src.size())) {
+    if(!createShaderProgram(&this->id, &compiledShaders[0], (int) src.size())) {
         return;
     }
 
     compiled = true;
+    this->attributes = attributes;
     this->uniforms = uniforms;
     this->uniformLocs = std::vector<GLuint>(uniforms.size());
 }
 
-std::vector<GLuint>* shader::use() {
+std::vector<GLuint>* shader::use(std::vector<GLuint> vbo, std::vector<shader_texture> textures) {
     glUseProgram(this->id);
 
     if(!this->updatedThisFrame) {
@@ -32,6 +37,18 @@ std::vector<GLuint>* shader::use() {
             this->uniformLocs[i] = glGetUniformLocation(this->id, uniform.name);
         }
         this->updatedThisFrame = true;
+    }
+
+    for(int i = 0; i < this->attributes.size(); ++i) {
+        shader_attribute sa = this->attributes[i];
+        glBindBuffer(sa.bufferType, vbo[i]);
+        glVertexAttribPointer(sa.location, sa.size, sa.type, sa.normalize ? GL_TRUE : GL_FALSE, sa.stride, 0);
+        glEnableVertexAttribArray(sa.location);
+    }
+
+    for(shader_texture st : textures) {
+        glActiveTexture(st.slot);
+        glBindTexture(GL_TEXTURE_2D, st.id);
     }
 
     return &this->uniformLocs;

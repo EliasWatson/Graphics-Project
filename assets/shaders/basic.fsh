@@ -1,6 +1,8 @@
 #version 430
 
-in vec3 vertex_color;
+layout (binding=0) uniform sampler2D samp;
+
+in vec2 texture_coord;
 
 uniform mat4 mv_matrix;
 uniform mat4 proj_matrix;
@@ -8,5 +10,5 @@ uniform mat4 proj_matrix;
 out vec4 color;
 
 void main() {
-    color = vec4(vertex_color, 1.0);
+    color = texture(samp, texture_coord);
 }

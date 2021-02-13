@@ -7,6 +7,8 @@ add_executable(Graphics_Project
     src/shader.cpp
     src/mesh.hpp
     src/mesh.cpp
+    src/texture.hpp
+    src/texture.cpp
 )
 set_property(TARGET Graphics_Project PROPERTY CXX_STANDARD 11)
 #target_compile_options(Graphics_Project PRIVATE -Wall)
@@ -23,3 +25,7 @@ target_link_libraries(Graphics_Project PRIVATE libglew_static)
 # glm
 add_subdirectory(lib/glm EXCLUDE_FROM_ALL)
 target_link_libraries(Graphics_Project PRIVATE glm)
+
+# soil2
+add_subdirectory(lib/soil2 EXCLUDE_FROM_ALL)
+target_link_libraries(Graphics_Project PRIVATE soil2)

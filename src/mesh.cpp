@@ -9,16 +9,17 @@ mesh::mesh(shader shaderProgram) {
     this->scale = glm::vec3(1.0f, 1.0f, 1.0f);
     this->rotation = 0.0f;
 
-    this->vbo = 0;
+    this->vbo = std::vector<GLuint>();
     this->vertexCount = 0;
 
     this->shaderProgram = shaderProgram;
+    this->textures = std::vector<shader_texture>();
     this->invertBackface = false;
 }
 
 int mesh::render(std::stack<glm::mat4>* matrixStack, glm::mat4 perspectiveMatrix, float currentTime) {
     // Load shader
-    std::vector<GLuint>* uniformLocs = this->shaderProgram.use();
+    std::vector<GLuint>* uniformLocs = this->shaderProgram.use(this->vbo, this->textures);
 
     // Build matrices
     matrixStack->push(matrixStack->top());
@@ -34,11 +35,6 @@ int mesh::render(std::stack<glm::mat4>* matrixStack, glm::mat4 perspectiveMatrix
     glUniformMatrix4fv(uniformLocs->at(0), 1, GL_FALSE, glm::value_ptr(matrixStack->top()));
     glUniformMatrix4fv(uniformLocs->at(1), 1, GL_FALSE, glm::value_ptr(perspectiveMatrix));
     glUniform1f(uniformLocs->at(2), float(currentTime));
-
-    // Bind VBO to shader vertex attribute
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    glEnableVertexAttribArray(0);
 
     // Draw model
     glEnable(GL_DEPTH_TEST);

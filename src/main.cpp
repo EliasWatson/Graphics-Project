@@ -10,12 +10,13 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "texture.hpp"
 #include "shader.hpp"
 #include "mesh.hpp"
 
 // Constants
 #define NUM_VAO 1
-#define NUM_VBO 2
+#define NUM_VBO 3
 #define NUM_CUBES 10000
 
 // Globals
@@ -23,6 +24,7 @@ float cameraFOV;
 float cameraX, cameraY, cameraZ;
 std::vector<mesh> meshes;
 
+texture brickTexture;
 shader shaderProgram;
 GLuint vao[NUM_VAO];
 GLuint vbo[NUM_VBO];
@@ -78,6 +80,9 @@ void init(GLFWwindow* window) {
     cameraY =  0.0f;
     cameraZ = 10.0f;
 
+    brickTexture = texture("../../assets/textures/PavingStones070_1K_Color.jpg");
+    if(brickTexture.id == 0) exit(EXIT_FAILURE);
+
     loadShaders();
     createMeshes();
 
@@ -110,11 +115,13 @@ void display(GLFWwindow* window, double currentTime) {
     // Update meshes
     meshes[0].rotation = (float) currentTime;
 
+    /*
     meshes[1].position = glm::vec3(sin((float) currentTime) * 4.0f, 0.0f, cos((float) currentTime) * 4.0f);
     meshes[1].rotation = (float) currentTime;
 
     meshes[2].position = glm::vec3(0.0f, sin((float) currentTime) * 2.0f, cos((float) currentTime) * 2.0f);
     meshes[2].rotation = (float) currentTime;
+    */
 
     // Render meshes
     for(mesh m : meshes) {
@@ -128,12 +135,30 @@ void loadShaders() {
     src.push_back({GL_VERTEX_SHADER, "../../assets/shaders/basic.vsh"});
     src.push_back({GL_FRAGMENT_SHADER, "../../assets/shaders/basic.fsh"});
 
+    std::vector<shader_attribute> attributes;
+    attributes.push_back({
+        GL_ARRAY_BUFFER,    // GLenum bufferType;
+        0,                  // int location;
+        3,                  // int size;
+        0,                  // int stride = 0;
+        GL_FLOAT,           // GLenum type = GL_FLOAT;
+        false               // bool normalize = false;
+    });
+    attributes.push_back({
+        GL_ARRAY_BUFFER,    // GLenum bufferType;
+        1,                  // int location;
+        2,                  // int size;
+        0,                  // int stride = 0;
+        GL_FLOAT,           // GLenum type = GL_FLOAT;
+        false               // bool normalize = false;
+    });
+
     std::vector<shader_uniform> uniforms;
     uniforms.push_back({shader_uniform::MAT4, "mv_matrix"});
     uniforms.push_back({shader_uniform::MAT4, "proj_matrix"});
     uniforms.push_back({shader_uniform::FLOAT, "tf"});
 
-    shaderProgram = shader(src, uniforms);
+    shaderProgram = shader(src, attributes, uniforms);
     if(!shaderProgram.compiled) exit(EXIT_FAILURE);
 }
 
@@ -162,6 +187,12 @@ void createMeshes() {
          1.0f, -1.0f,  1.0f, -1.0f, -1.0f, -1.0f,  1.0f, -1.0f, -1.0f
     };
 
+    float pyramidUVs[36] = {
+        0.0f, 0.0f, 1.0f, 0.0f, 0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.5f, 1.0f,
+        0.0f, 0.0f, 1.0f, 0.0f, 0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.5f, 1.0f,
+        0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f
+    };
+
     glGenVertexArrays(1, vao);
     glBindVertexArray(vao[0]);
     glGenBuffers(NUM_VBO, vbo);
@@ -172,15 +203,21 @@ void createMeshes() {
     glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(pyramidPositions), pyramidPositions, GL_STATIC_DRAW);
 
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[2]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(pyramidUVs), pyramidUVs, GL_STATIC_DRAW);
+
     // Create pyramid sun
     mesh pyramid = mesh(shaderProgram);
 
     pyramid.rotationAxis = glm::vec3(1.0f, 0.0f, 0.0f);
-    pyramid.vbo = vbo[1];
+    pyramid.vbo.push_back(vbo[1]);
+    pyramid.vbo.push_back(vbo[2]);
     pyramid.vertexCount = sizeof(pyramidPositions) / sizeof(float);
+    pyramid.textures.push_back({brickTexture.id, GL_TEXTURE0});
 
     meshes.push_back(pyramid);
 
+    /*
     // Create cube planet
     mesh cubePlanet = mesh(shaderProgram);
 
@@ -200,4 +237,5 @@ void createMeshes() {
     cubeMoon.invertBackface = true;
 
     meshes.push_back(cubeMoon);
+    */
 }

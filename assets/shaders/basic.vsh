@@ -1,17 +1,20 @@
 #version 430
 
 layout (location = 0) in vec3 position;
+layout (location = 1) in vec2 uv;
 
 uniform mat4 mv_matrix;
 uniform mat4 proj_matrix;
 uniform float tf;
 
-out vec3 vertex_color;
+out vec2 texture_coord;
 
+/*
 mat4 buildRotateX(float rad);
 mat4 buildRotateY(float rad);
 mat4 buildRotateZ(float rad);
 mat4 buildTranslate(vec3 pos);
+*/
 
 void main() {
     /*
@@ -32,9 +35,10 @@ void main() {
     */
 
     gl_Position = proj_matrix * mv_matrix * vec4(position, 1.0);
-    vertex_color = position.xyz * 0.5 + 0.5;
+    texture_coord = uv;
 }
 
+/*
 mat4 buildRotateX(float rad) {
     return transpose(mat4(
         vec4(1,        0,         0, 0),
@@ -70,3 +74,4 @@ mat4 buildTranslate(vec3 pos) {
         vec4(0, 0, 0,      1)
     ));
 }
+*/

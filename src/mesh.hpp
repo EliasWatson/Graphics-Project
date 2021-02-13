@@ -12,10 +12,11 @@ struct mesh {
     glm::vec3 position, rotationAxis, scale;
     float rotation;
 
-    GLuint vbo;
+    std::vector<GLuint> vbo;
     GLsizei vertexCount;
 
     shader shaderProgram;
+    std::vector<shader_texture> textures;
     bool invertBackface;
 
     mesh(shader shaderProgram);
