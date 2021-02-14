@@ -7,6 +7,7 @@
 - Implemented anisotropic filtering
 - Created basic model loader
 - Rendered Blender's suzanne model with UV texturing and normals
+- Modified model loader to combine vertices with identical attributes
 
 ## 2021-02-13
 **6 Hours**

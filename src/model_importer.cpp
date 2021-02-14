@@ -2,10 +2,21 @@
 
 #include <GL/glew.h>
 #include <vector>
+#include <unordered_map>
+#include <tuple>
+#include <functional>
 #include <stdio.h>
 #include <stdlib.h>
 
 #define ERROR { success = false; break; }
+
+typedef std::tuple<int, int, int> triplet;
+
+struct triplet_hash : public std::unary_function<triplet, std::size_t> {
+    std::size_t operator()(const triplet& k) const {
+        return std::get<0>(k) ^ std::get<1>(k) ^ std::get<2>(k);
+    }
+};
 
 void consumeLine(FILE* file) {
     int c;
@@ -59,6 +70,7 @@ bool importModel(const char* path, mesh* model) {
         }
     }
 
+    std::unordered_map<const std::tuple<int, int, int>, int, triplet_hash> vertex_map;
     std::vector<float> final_position;
     std::vector<float> final_uv;
     std::vector<float> final_normal;
@@ -71,10 +83,19 @@ bool importModel(const char* path, mesh* model) {
         if(type[0] == 'f') {
             if(fscanf(file, "%d/%d/%d %d/%d/%d %d/%d/%d\n", &p[0], &u[0], &n[0], &p[1], &u[1], &n[1], &p[2], &u[2], &n[2]) <= 0) ERROR;
             for(int i = 0; i < 3; ++i) {
-                for(int j = 0; j < 3; ++j) final_position.push_back(position[((p[i]-1) * 3) + j]);
-                for(int j = 0; j < 2; ++j) final_uv.push_back(uv[((u[i]-1) * 2) + j]);
-                for(int j = 0; j < 3; ++j) final_normal.push_back(normal[((n[i]-1) * 3) + j]);
-                final_index.push_back(currentIndex++);
+                std::tuple<int, int, int> index = std::make_tuple(p[i], u[i], n[i]);
+                auto iter = vertex_map.find(index);
+
+                if(iter == vertex_map.end()) {
+                    for(int j = 0; j < 3; ++j) final_position.push_back(position[((p[i]-1) * 3) + j]);
+                    for(int j = 0; j < 2; ++j) final_uv.push_back(uv[((u[i]-1) * 2) + j]);
+                    for(int j = 0; j < 3; ++j) final_normal.push_back(normal[((n[i]-1) * 3) + j]);
+                    vertex_map.emplace(index, currentIndex);
+                    final_index.push_back(currentIndex);
+                    currentIndex++;
+                } else {
+                    final_index.push_back(iter->second);
+                }
             }
         } else {
             // Skip lines that we don't support
