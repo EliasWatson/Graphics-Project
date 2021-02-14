@@ -76,9 +76,9 @@ int main() {
 void init(GLFWwindow* window) {
     cameraFOV = 60.0f;
 
-    cameraX =  0.0f;
-    cameraY =  0.0f;
-    cameraZ = 10.0f;
+    cameraX = 0.0f;
+    cameraY = 0.0f;
+    cameraZ = 3.0f;
 
     brickTexture = texture("../../assets/textures/PavingStones070_1K_Color.jpg");
     if(brickTexture.id == 0) exit(EXIT_FAILURE);
@@ -209,7 +209,7 @@ void createMeshes() {
     // Create pyramid sun
     mesh pyramid = mesh(shaderProgram);
 
-    pyramid.rotationAxis = glm::vec3(1.0f, 0.0f, 0.0f);
+    pyramid.rotationAxis = glm::normalize(glm::vec3(1.0f, 0.75f, 0.5f));
     pyramid.vbo.push_back(vbo[1]);
     pyramid.vbo.push_back(vbo[2]);
     pyramid.vertexCount = sizeof(pyramidPositions) / sizeof(float);
