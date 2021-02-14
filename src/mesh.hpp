@@ -13,13 +13,14 @@ struct mesh {
     float rotation;
 
     std::vector<GLuint> vbo;
+    GLuint vboIndices;
     GLsizei vertexCount;
 
     shader shaderProgram;
     std::vector<shader_texture> textures;
     bool invertBackface;
 
-    mesh(shader shaderProgram);
+    mesh();
     int render(std::stack<glm::mat4>* matrixStack, glm::mat4 perspectiveMatrix, float currentTime);
 };
 

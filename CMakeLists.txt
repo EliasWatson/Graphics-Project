@@ -9,6 +9,8 @@ add_executable(Graphics_Project
     src/mesh.cpp
     src/texture.hpp
     src/texture.cpp
+    src/model_importer.hpp
+    src/model_importer.cpp
 )
 set_property(TARGET Graphics_Project PROPERTY CXX_STANDARD 11)
 #target_compile_options(Graphics_Project PRIVATE -Wall)

@@ -13,11 +13,7 @@
 #include "texture.hpp"
 #include "shader.hpp"
 #include "mesh.hpp"
-
-// Constants
-#define NUM_VAO 1
-#define NUM_VBO 3
-#define NUM_CUBES 10000
+#include "model_importer.hpp"
 
 // Globals
 float cameraFOV;
@@ -26,8 +22,6 @@ std::vector<mesh> meshes;
 
 texture brickTexture;
 shader shaderProgram;
-GLuint vao[NUM_VAO];
-GLuint vbo[NUM_VBO];
 
 int width, height;
 float aspect;
@@ -115,14 +109,6 @@ void display(GLFWwindow* window, double currentTime) {
     // Update meshes
     meshes[0].rotation = (float) currentTime;
 
-    /*
-    meshes[1].position = glm::vec3(sin((float) currentTime) * 4.0f, 0.0f, cos((float) currentTime) * 4.0f);
-    meshes[1].rotation = (float) currentTime;
-
-    meshes[2].position = glm::vec3(0.0f, sin((float) currentTime) * 2.0f, cos((float) currentTime) * 2.0f);
-    meshes[2].rotation = (float) currentTime;
-    */
-
     // Render meshes
     for(mesh m : meshes) {
         int matrixCount = m.render(&mvStack, pMat, (float) currentTime);
@@ -152,8 +138,17 @@ void loadShaders() {
         GL_FLOAT,           // GLenum type = GL_FLOAT;
         false               // bool normalize = false;
     });
+    attributes.push_back({
+        GL_ARRAY_BUFFER,    // GLenum bufferType;
+        2,                  // int location;
+        3,                  // int size;
+        0,                  // int stride = 0;
+        GL_FLOAT,           // GLenum type = GL_FLOAT;
+        true                // bool normalize = false;
+    });
 
     std::vector<shader_uniform> uniforms;
+    uniforms.push_back({shader_uniform::MAT4, "rot_matrix"});
     uniforms.push_back({shader_uniform::MAT4, "mv_matrix"});
     uniforms.push_back({shader_uniform::MAT4, "proj_matrix"});
     uniforms.push_back({shader_uniform::FLOAT, "tf"});
@@ -163,79 +158,17 @@ void loadShaders() {
 }
 
 void createMeshes() {
-    float cubePositions[108] = {
-        -1.0f,  1.0f, -1.0f, -1.0f, -1.0f, -1.0f,  1.0f, -1.0f, -1.0f,
-         1.0f, -1.0f, -1.0f,  1.0f,  1.0f, -1.0f, -1.0f,  1.0f, -1.0f,
-         1.0f, -1.0f, -1.0f,  1.0f, -1.0f,  1.0f,  1.0f,  1.0f, -1.0f,
-         1.0f, -1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  1.0f, -1.0f,
-         1.0f, -1.0f,  1.0f, -1.0f, -1.0f,  1.0f,  1.0f,  1.0f,  1.0f,
-        -1.0f, -1.0f,  1.0f, -1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  1.0f,
-        -1.0f, -1.0f,  1.0f, -1.0f, -1.0f, -1.0f, -1.0f,  1.0f,  1.0f,
-        -1.0f, -1.0f, -1.0f, -1.0f,  1.0f, -1.0f, -1.0f,  1.0f,  1.0f,
-        -1.0f, -1.0f,  1.0f,  1.0f, -1.0f,  1.0f,  1.0f, -1.0f, -1.0f,
-         1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f,  1.0f,
-        -1.0f,  1.0f, -1.0f,  1.0f,  1.0f, -1.0f,  1.0f,  1.0f,  1.0f,
-         1.0f,  1.0f,  1.0f, -1.0f,  1.0f,  1.0f, -1.0f,  1.0f, -1.0f
-    };
+    // Load suzanne mesh
+    mesh suzanne;
+    const char* suzannePath = "../../assets/models/suzanne.obj";
+    if(!importModel(suzannePath, &suzanne)) {
+        printf("failed to load model '%s'\n", suzannePath);
+        exit(EXIT_FAILURE);
+    }
 
-    float pyramidPositions[54] = {
-        -1.0f, -1.0f,  1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  1.0f,  0.0f,
-         1.0f, -1.0f,  1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  1.0f,  0.0f,
-         1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  1.0f,  0.0f,
-        -1.0f, -1.0f, -1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  1.0f,  0.0f,
-        -1.0f, -1.0f, -1.0f,  1.0f, -1.0f,  1.0f, -1.0f, -1.0f,  1.0f,
-         1.0f, -1.0f,  1.0f, -1.0f, -1.0f, -1.0f,  1.0f, -1.0f, -1.0f
-    };
+    suzanne.shaderProgram = shaderProgram;
+    suzanne.rotationAxis = glm::normalize(glm::vec3(1.0f, 0.75f, 0.5f));
+    suzanne.textures.push_back({brickTexture.id, GL_TEXTURE0});
 
-    float pyramidUVs[36] = {
-        0.0f, 0.0f, 1.0f, 0.0f, 0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.5f, 1.0f,
-        0.0f, 0.0f, 1.0f, 0.0f, 0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.5f, 1.0f,
-        0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f
-    };
-
-    glGenVertexArrays(1, vao);
-    glBindVertexArray(vao[0]);
-    glGenBuffers(NUM_VBO, vbo);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(cubePositions), cubePositions, GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(pyramidPositions), pyramidPositions, GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vbo[2]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(pyramidUVs), pyramidUVs, GL_STATIC_DRAW);
-
-    // Create pyramid sun
-    mesh pyramid = mesh(shaderProgram);
-
-    pyramid.rotationAxis = glm::normalize(glm::vec3(1.0f, 0.75f, 0.5f));
-    pyramid.vbo.push_back(vbo[1]);
-    pyramid.vbo.push_back(vbo[2]);
-    pyramid.vertexCount = sizeof(pyramidPositions) / sizeof(float);
-    pyramid.textures.push_back({brickTexture.id, GL_TEXTURE0});
-
-    meshes.push_back(pyramid);
-
-    /*
-    // Create cube planet
-    mesh cubePlanet = mesh(shaderProgram);
-
-    cubePlanet.vbo = vbo[0];
-    cubePlanet.vertexCount = sizeof(cubePositions) / sizeof(float);
-    cubePlanet.invertBackface = true;
-
-    meshes.push_back(cubePlanet);
-
-    // Create cube moon
-    mesh cubeMoon = mesh(shaderProgram);
-    cubeMoon.rotationAxis = glm::vec3(0.0f, 0.0f, 1.0f);
-    cubeMoon.scale = glm::vec3(0.25f, 0.25f, 0.25f);
-
-    cubeMoon.vbo = vbo[0];
-    cubeMoon.vertexCount = sizeof(cubePositions) / sizeof(float);
-    cubeMoon.invertBackface = true;
-
-    meshes.push_back(cubeMoon);
-    */
+    meshes.push_back(suzanne);
 }

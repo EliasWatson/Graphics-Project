@@ -88,6 +88,7 @@ bool shader::loadShaderFromFile(GLuint* id, GLenum type, const char* path) {
         (std::istreambuf_iterator<char>(stream)),
         (std::istreambuf_iterator<char>())
     );
+    stream.close();
     return loadShader(id, type, source.c_str());
 }
 

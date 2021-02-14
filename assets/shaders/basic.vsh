@@ -2,76 +2,19 @@
 
 layout (location = 0) in vec3 position;
 layout (location = 1) in vec2 uv;
+layout (location = 2) in vec3 normal;
 
+uniform mat4 rot_matrix;
 uniform mat4 mv_matrix;
 uniform mat4 proj_matrix;
 uniform float tf;
 
 out vec2 texture_coord;
-
-/*
-mat4 buildRotateX(float rad);
-mat4 buildRotateY(float rad);
-mat4 buildRotateZ(float rad);
-mat4 buildTranslate(vec3 pos);
-*/
+out vec3 frag_normal;
 
 void main() {
-    /*
-    float i = gl_InstanceID + tf;
-    vec3 offset = vec3(
-        sin(203.0 * i/8000.0),
-        sin(301.0 * i/4001.0),
-        sin(400.0 * i/6004.0)
-    ) * 400.0;
-
-    mat4 rotX = buildRotateX(1.75 * i);
-    mat4 rotY = buildRotateY(1.75 * i);
-    mat4 rotZ = buildRotateZ(1.75 * i);
-    mat4 translate = buildTranslate(offset);
-
-    mat4 m_matrix = translate * rotX * rotY * rotZ;
-    mat4 mv_matrix = v_matrix * m_matrix;
-    */
-
     gl_Position = proj_matrix * mv_matrix * vec4(position, 1.0);
+
     texture_coord = uv;
+    frag_normal = (rot_matrix * vec4(normal, 1)).xyz;
 }
-
-/*
-mat4 buildRotateX(float rad) {
-    return transpose(mat4(
-        vec4(1,        0,         0, 0),
-        vec4(0, cos(rad), -sin(rad), 0),
-        vec4(0, sin(rad),  cos(rad), 0),
-        vec4(0,        0,         0, 1)
-    ));
-}
-
-mat4 buildRotateY(float rad) {
-    return transpose(mat4(
-        vec4( cos(rad), 0, sin(rad), 0),
-        vec4(        0, 1,        0, 0),
-        vec4(-sin(rad), 0, cos(rad), 0),
-        vec4(        0, 0,        0, 1)
-    ));
-}
-
-mat4 buildRotateZ(float rad) {
-    return transpose(mat4(
-        vec4(cos(rad), -sin(rad), 0, 0),
-        vec4(sin(rad),  cos(rad), 0, 0),
-        vec4(       0,         0, 1, 0),
-        vec4(       0,         0, 0, 1)
-    ));
-}
-
-mat4 buildTranslate(vec3 pos) {
-    return transpose(mat4(
-        vec4(1, 0, 0, -pos.x),
-        vec4(0, 1, 0, -pos.y),
-        vec4(0, 0, 1, -pos.z),
-        vec4(0, 0, 0,      1)
-    ));
-}
-*/
