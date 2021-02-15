@@ -6,7 +6,7 @@
 #include <vector>
 #include <stack>
 
-#include "shader.hpp"
+#include "material.hpp"
 
 struct mesh {
     glm::vec3 position, rotationAxis, scale;
@@ -16,8 +16,7 @@ struct mesh {
     GLuint vboIndices;
     GLsizei vertexCount;
 
-    shader shaderProgram;
-    std::vector<shader_texture> textures;
+    material mat;
     bool invertBackface;
 
     mesh();

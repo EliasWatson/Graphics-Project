@@ -12,6 +12,7 @@
 
 #include "texture.hpp"
 #include "shader.hpp"
+#include "material.hpp"
 #include "mesh.hpp"
 #include "model_importer.hpp"
 
@@ -22,6 +23,7 @@ std::vector<mesh> meshes;
 
 texture brickTexture;
 shader shaderProgram;
+material mat;
 
 int width, height;
 float aspect;
@@ -35,6 +37,7 @@ void window_resize(GLFWwindow* window, int width, int height);
 void display(GLFWwindow* window, double currentTime);
 
 void loadShaders();
+void createMaterials();
 void createMeshes();
 
 // Methods
@@ -78,6 +81,7 @@ void init(GLFWwindow* window) {
     if(brickTexture.id == 0) exit(EXIT_FAILURE);
 
     loadShaders();
+    createMaterials();
     createMeshes();
 
     glfwGetFramebufferSize(window, &width, &height);
@@ -157,6 +161,11 @@ void loadShaders() {
     if(!shaderProgram.compiled) exit(EXIT_FAILURE);
 }
 
+void createMaterials() {
+    mat = material(shaderProgram);
+    mat.textures.push_back({brickTexture.id, GL_TEXTURE0});
+}
+
 void createMeshes() {
     // Load suzanne mesh
     mesh suzanne;
@@ -166,9 +175,8 @@ void createMeshes() {
         exit(EXIT_FAILURE);
     }
 
-    suzanne.shaderProgram = shaderProgram;
+    suzanne.mat = mat;
     suzanne.rotationAxis = glm::normalize(glm::vec3(1.0f, 0.75f, 0.5f));
-    suzanne.textures.push_back({brickTexture.id, GL_TEXTURE0});
 
     meshes.push_back(suzanne);
 }

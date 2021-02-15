@@ -1,5 +1,9 @@
 # Time Log
-**Total Time: 19 Hours**
+**Total Time: 20 Hours**
+
+## 2021-02-15
+**1 Hour**
+- Refactored material management into struct
 
 ## 2021-02-14
 **3 Hours**

@@ -5,6 +5,8 @@ add_executable(Graphics_Project
     src/main.cpp
     src/shader.hpp
     src/shader.cpp
+    src/material.hpp
+    src/material.cpp
     src/mesh.hpp
     src/mesh.cpp
     src/texture.hpp
