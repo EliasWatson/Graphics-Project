@@ -1,7 +1,7 @@
 #ifndef H_TEXTURE
 #define H_TEXTURE
 
-#include "gl/glew.h"
+#include <GL/glew.h>
 
 struct texture {
     GLuint id;

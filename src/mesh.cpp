@@ -16,7 +16,7 @@ mesh::mesh() {
     this->invertBackface = false;
 }
 
-int mesh::render(std::stack<glm::mat4>* matrixStack, glm::mat4 perspectiveMatrix, float currentTime) {
+int mesh::render(std::stack<glm::mat4>* matrixStack, glm::mat4 perspectiveMatrix, float currentTime, material::light_data lightData) {
     // Build matrices
     matrixStack->push(matrixStack->top());
     matrixStack->top() *= glm::translate(glm::mat4(1.0f), this->position);
@@ -41,7 +41,7 @@ int mesh::render(std::stack<glm::mat4>* matrixStack, glm::mat4 perspectiveMatrix
         matrixStack->top(),
         rotMat,
         currentTime
-    });
+    }, lightData);
 
     // Return number of matrices added to the stack
     return 3;

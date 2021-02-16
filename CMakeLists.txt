@@ -3,10 +3,13 @@ project(Graphics_Project)
 
 add_executable(Graphics_Project
     src/main.cpp
+    src/util.hpp
     src/shader.hpp
     src/shader.cpp
     src/material.hpp
     src/material.cpp
+    src/light.hpp
+    src/light.cpp
     src/mesh.hpp
     src/mesh.cpp
     src/texture.hpp
@@ -14,7 +17,7 @@ add_executable(Graphics_Project
     src/model_importer.hpp
     src/model_importer.cpp
 )
-set_property(TARGET Graphics_Project PROPERTY CXX_STANDARD 11)
+set_property(TARGET Graphics_Project PROPERTY CXX_STANDARD 14)
 #target_compile_options(Graphics_Project PRIVATE -Wall)
 
 # glfw

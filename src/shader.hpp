@@ -20,7 +20,7 @@ struct shader_attribute {
 
 struct shader_uniform {
     enum uniform_type {
-        FLOAT, MAT4
+        FLOAT, MAT4, VEC4, VEC4_ARR
     };
 
     uniform_type type;

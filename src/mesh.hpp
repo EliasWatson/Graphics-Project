@@ -20,7 +20,7 @@ struct mesh {
     bool invertBackface;
 
     mesh();
-    int render(std::stack<glm::mat4>* matrixStack, glm::mat4 perspectiveMatrix, float currentTime);
+    int render(std::stack<glm::mat4>* matrixStack, glm::mat4 perspectiveMatrix, float currentTime, material::light_data lightData);
 };
 
 #endif

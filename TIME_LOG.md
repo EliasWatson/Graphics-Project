@@ -1,5 +1,10 @@
 # Time Log
-**Total Time: 20 Hours**
+**Total Time: 22 Hours**
+
+## 2021-02-16
+**2 Hours**
+- Implemented lights
+- Implemented ADS lighting
 
 ## 2021-02-15
 **1 Hour**

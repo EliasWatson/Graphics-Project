@@ -10,16 +10,22 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "util.hpp"
 #include "texture.hpp"
 #include "shader.hpp"
 #include "material.hpp"
 #include "mesh.hpp"
+#include "light.hpp"
 #include "model_importer.hpp"
+
+// Constants
+float empty_4f[4] = {0.0, 0.0, 0.0, 1.0};
 
 // Globals
 float cameraFOV;
 float cameraX, cameraY, cameraZ;
 std::vector<mesh> meshes;
+std::vector<light> lights;
 
 texture brickTexture;
 shader shaderProgram;
@@ -30,6 +36,7 @@ float aspect;
 
 glm::mat4 pMat, vMat;
 std::stack<glm::mat4> mvStack;
+material::light_data lightData;
 
 // Prototypes
 void init(GLFWwindow* window);
@@ -39,6 +46,7 @@ void display(GLFWwindow* window, double currentTime);
 void loadShaders();
 void createMaterials();
 void createMeshes();
+void createLights();
 
 // Methods
 int main() {
@@ -83,6 +91,7 @@ void init(GLFWwindow* window) {
     loadShaders();
     createMaterials();
     createMeshes();
+    createLights();
 
     glfwGetFramebufferSize(window, &width, &height);
     window_resize(window, width, height);
@@ -110,12 +119,33 @@ void display(GLFWwindow* window, double currentTime) {
     vMat = glm::translate(glm::mat4(1.0f), glm::vec3(-cameraX, -cameraY, -cameraZ));
     mvStack.push(vMat);
 
+    // Update lights
+    lights[0].pos[0] = cosf(currentTime) * 5.0;
+
     // Update meshes
-    meshes[0].rotation = (float) currentTime;
+    //meshes[0].rotation = (float) currentTime;
+
+    // Build light data
+    // TODO: Make this async
+    for(int i = 0; i < MAX_LIGHTS; ++i) {
+        if(i < lights.size()) {
+            glm::vec4 l_pos = mvStack.top() * lights[i].pos;
+
+            COPY_VEC4(lightData.pos[i],      l_pos);
+            COPY_VEC4(lightData.ambient[i],  lights[i].ambient);
+            COPY_VEC4(lightData.diffuse[i],  lights[i].diffuse);
+            COPY_VEC4(lightData.specular[i], lights[i].specular);
+        } else {
+            COPY_VEC4(lightData.pos[i],      empty_4f);
+            COPY_VEC4(lightData.ambient[i],  empty_4f);
+            COPY_VEC4(lightData.diffuse[i],  empty_4f);
+            COPY_VEC4(lightData.specular[i], empty_4f);
+        }
+    }
 
     // Render meshes
     for(mesh m : meshes) {
-        int matrixCount = m.render(&mvStack, pMat, (float) currentTime);
+        int matrixCount = m.render(&mvStack, pMat, (float) currentTime, lightData);
         for(; matrixCount > 1; --matrixCount) mvStack.pop();
     }
 }
@@ -157,6 +187,16 @@ void loadShaders() {
     uniforms.push_back({shader_uniform::MAT4, "proj_matrix"});
     uniforms.push_back({shader_uniform::FLOAT, "tf"});
 
+    uniforms.push_back({shader_uniform::VEC4_ARR, "light_pos"});
+    uniforms.push_back({shader_uniform::VEC4_ARR, "light_ambient"});
+    uniforms.push_back({shader_uniform::VEC4_ARR, "light_diffuse"});
+    uniforms.push_back({shader_uniform::VEC4_ARR, "light_specular"});
+
+    uniforms.push_back({shader_uniform::VEC4,  "ambient_color"});
+    uniforms.push_back({shader_uniform::VEC4,  "diffuse_color"});
+    uniforms.push_back({shader_uniform::VEC4,  "specular_color"});
+    uniforms.push_back({shader_uniform::FLOAT, "shininess_factor"});
+
     shaderProgram = shader(src, attributes, uniforms);
     if(!shaderProgram.compiled) exit(EXIT_FAILURE);
 }
@@ -164,6 +204,11 @@ void loadShaders() {
 void createMaterials() {
     mat = material(shaderProgram);
     mat.textures.push_back({brickTexture.id, GL_TEXTURE0});
+
+    mat.ambient   = glm::vec4(0.2473, 0.1995, 0.0745, 1);
+    mat.diffuse   = glm::vec4(0.7516, 0.6065, 0.2265, 1);
+    mat.specular  = glm::vec4(0.6283, 0.5558, 0.3661, 1);
+    mat.shininess = 51.2;
 }
 
 void createMeshes() {
@@ -179,4 +224,13 @@ void createMeshes() {
     suzanne.rotationAxis = glm::normalize(glm::vec3(1.0f, 0.75f, 0.5f));
 
     meshes.push_back(suzanne);
+}
+
+void createLights() {
+    lights.push_back({
+        glm::vec4(5.0, 2.0, 2.0, 1.0),
+        glm::vec4(0.0, 0.0, 0.0, 1.0),
+        glm::vec4(1.0, 1.0, 1.0, 1.0),
+        glm::vec4(1.0, 1.0, 1.0, 1.0)
+    });
 }

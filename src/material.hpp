@@ -6,6 +6,8 @@
 #include <glm/glm.hpp>
 #include <vector>
 
+#define MAX_LIGHTS 1
+
 struct material {
     struct model_data {
         std::vector<GLuint> vbo;
@@ -19,14 +21,22 @@ struct material {
         float time;
     };
 
+    struct light_data {
+        float pos[MAX_LIGHTS][4];
+        float ambient[MAX_LIGHTS][4];
+        float diffuse[MAX_LIGHTS][4];
+        float specular[MAX_LIGHTS][4];
+    };
+
     shader shaderProgram;
-    glm::vec3 ambient, diffuse, specular, shininess;
+    glm::vec4 ambient, diffuse, specular;
+    float shininess;
     std::vector<shader_texture> textures;
 
     material() { }
     material(shader shaderProgram) : shaderProgram(shaderProgram) { }
 
-    void render(model_data md, params p);
+    void render(model_data md, params p, light_data l);
 };
 
 #endif
