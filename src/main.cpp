@@ -27,7 +27,7 @@ float cameraX, cameraY, cameraZ;
 std::vector<mesh> meshes;
 std::vector<light> lights;
 
-texture brickTexture;
+texture brickAlbedoTexture, brickRoughnessTexture;
 shader shaderProgram;
 material mat;
 
@@ -85,8 +85,11 @@ void init(GLFWwindow* window) {
     cameraY = 0.0f;
     cameraZ = 3.0f;
 
-    brickTexture = texture("../../assets/textures/PavingStones070_1K_Color.jpg");
-    if(brickTexture.id == 0) exit(EXIT_FAILURE);
+    brickAlbedoTexture = texture("../../assets/textures/PavingStones070_1K_Color.jpg");
+    if(brickAlbedoTexture.id == 0) exit(EXIT_FAILURE);
+
+    brickRoughnessTexture = texture("../../assets/textures/PavingStones070_1K_Roughness.jpg");
+    if(brickRoughnessTexture.id == 0) exit(EXIT_FAILURE);
 
     loadShaders();
     createMaterials();
@@ -182,9 +185,9 @@ void loadShaders() {
     });
 
     std::vector<shader_uniform> uniforms;
-    uniforms.push_back({shader_uniform::MAT4, "rot_matrix"});
-    uniforms.push_back({shader_uniform::MAT4, "mv_matrix"});
     uniforms.push_back({shader_uniform::MAT4, "proj_matrix"});
+    uniforms.push_back({shader_uniform::MAT4, "mv_matrix"});
+    uniforms.push_back({shader_uniform::MAT4, "norm_matrix"});
     uniforms.push_back({shader_uniform::FLOAT, "tf"});
 
     uniforms.push_back({shader_uniform::VEC4_ARR, "light_pos"});
@@ -203,11 +206,12 @@ void loadShaders() {
 
 void createMaterials() {
     mat = material(shaderProgram);
-    mat.textures.push_back({brickTexture.id, GL_TEXTURE0});
+    mat.textures.push_back({brickAlbedoTexture.id, GL_TEXTURE0});
+    mat.textures.push_back({brickRoughnessTexture.id, GL_TEXTURE1});
 
-    mat.ambient   = glm::vec4(0.2473, 0.1995, 0.0745, 1);
-    mat.diffuse   = glm::vec4(0.7516, 0.6065, 0.2265, 1);
-    mat.specular  = glm::vec4(0.6283, 0.5558, 0.3661, 1);
+    mat.ambient   = glm::vec4(0.2, 0.2, 0.2, 1);
+    mat.diffuse   = glm::vec4(1.0, 1.0, 1.0, 1);
+    mat.specular  = glm::vec4(1.0, 1.0, 1.0, 1);
     mat.shininess = 51.2;
 }
 
@@ -229,7 +233,7 @@ void createMeshes() {
 void createLights() {
     lights.push_back({
         glm::vec4(5.0, 2.0, 2.0, 1.0),
-        glm::vec4(0.0, 0.0, 0.0, 1.0),
+        glm::vec4(0.2, 0.2, 0.2, 1.0),
         glm::vec4(1.0, 1.0, 1.0, 1.0),
         glm::vec4(1.0, 1.0, 1.0, 1.0)
     });

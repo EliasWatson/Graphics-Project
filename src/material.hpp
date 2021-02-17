@@ -17,7 +17,7 @@ struct material {
     };
 
     struct params {
-        glm::mat4 perspective, modelView, rotation;
+        glm::mat4 perspective, modelView, invModelView;
         float time;
     };
 

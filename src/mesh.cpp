@@ -27,8 +27,7 @@ int mesh::render(std::stack<glm::mat4>* matrixStack, glm::mat4 perspectiveMatrix
     matrixStack->push(matrixStack->top());
     matrixStack->top() *= glm::rotate(glm::mat4(1.0f), this->rotation, this->rotationAxis);
 
-    // This doesn't account for parented rotation, but good enough for now
-    glm::mat4 rotMat = glm::rotate(glm::mat4(1.0f), this->rotation, this->rotationAxis);
+    this->invMvMat = glm::transpose(glm::inverse(matrixStack->top()));
 
     // Render mesh
     this->mat.render({
@@ -39,7 +38,7 @@ int mesh::render(std::stack<glm::mat4>* matrixStack, glm::mat4 perspectiveMatrix
     }, {
         perspectiveMatrix,
         matrixStack->top(),
-        rotMat,
+        this->invMvMat,
         currentTime
     }, lightData);
 

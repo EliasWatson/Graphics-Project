@@ -7,9 +7,9 @@ void material::render(model_data md, params p, light_data l) {
     std::vector<GLuint>* uniformLocs = this->shaderProgram.use(md.vbo, this->textures);
 
     // Copy to uniforms
-    glUniformMatrix4fv(uniformLocs->at(0), 1, GL_FALSE, glm::value_ptr(p.rotation));
+    glUniformMatrix4fv(uniformLocs->at(0), 1, GL_FALSE, glm::value_ptr(p.perspective));
     glUniformMatrix4fv(uniformLocs->at(1), 1, GL_FALSE, glm::value_ptr(p.modelView));
-    glUniformMatrix4fv(uniformLocs->at(2), 1, GL_FALSE, glm::value_ptr(p.perspective));
+    glUniformMatrix4fv(uniformLocs->at(2), 1, GL_FALSE, glm::value_ptr(p.invModelView));
     glUniform1f(uniformLocs->at(3), p.time);
 
     glUniform4fv(uniformLocs->at(4), MAX_LIGHTS, l.pos[0]);

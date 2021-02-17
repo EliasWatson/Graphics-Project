@@ -1,5 +1,10 @@
 # Time Log
-**Total Time: 22 Hours**
+**Total Time: 23 Hours**
+
+## 2021-02-17
+**1 Hour**
+- Tweaked lighting
+- Moved some calculations to the vertex shader in order to improve performance
 
 ## 2021-02-16
 **2 Hours**
