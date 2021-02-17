@@ -1,6 +1,6 @@
 #version 430
 
-#define MAX_LIGHTS 1
+#define MAX_LIGHTS 2
 
 layout (binding=0) uniform sampler2D albedo_sampler;
 layout (binding=1) uniform sampler2D roughness_sampler;

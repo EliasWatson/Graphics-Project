@@ -1,10 +1,12 @@
 # Time Log
-**Total Time: 23 Hours**
+**Total Time: 26 Hours**
 
 ## 2021-02-17
-**1 Hour**
+**4 Hours**
 - Tweaked lighting
 - Moved some calculations to the vertex shader in order to improve performance
+- Replaced custom model loader with tinyobjloader
+- Switched example scene to a more complex model
 
 ## 2021-02-16
 **2 Hours**

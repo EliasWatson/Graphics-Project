@@ -6,7 +6,7 @@
 #include <glm/glm.hpp>
 #include <vector>
 
-#define MAX_LIGHTS 1
+#define MAX_LIGHTS 2
 
 struct material {
     struct model_data {

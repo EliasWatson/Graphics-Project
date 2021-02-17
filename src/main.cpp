@@ -27,7 +27,6 @@ float cameraX, cameraY, cameraZ;
 std::vector<mesh> meshes;
 std::vector<light> lights;
 
-texture brickAlbedoTexture, brickRoughnessTexture;
 shader shaderProgram;
 material mat;
 
@@ -85,12 +84,6 @@ void init(GLFWwindow* window) {
     cameraY = 0.0f;
     cameraZ = 3.0f;
 
-    brickAlbedoTexture = texture("../../assets/textures/PavingStones070_1K_Color.jpg");
-    if(brickAlbedoTexture.id == 0) exit(EXIT_FAILURE);
-
-    brickRoughnessTexture = texture("../../assets/textures/PavingStones070_1K_Roughness.jpg");
-    if(brickRoughnessTexture.id == 0) exit(EXIT_FAILURE);
-
     loadShaders();
     createMaterials();
     createMeshes();
@@ -122,11 +115,8 @@ void display(GLFWwindow* window, double currentTime) {
     vMat = glm::translate(glm::mat4(1.0f), glm::vec3(-cameraX, -cameraY, -cameraZ));
     mvStack.push(vMat);
 
-    // Update lights
-    lights[0].pos[0] = cosf(currentTime) * 5.0;
-
     // Update meshes
-    //meshes[0].rotation = (float) currentTime;
+    meshes[0].rotation = (float) currentTime;
 
     // Build light data
     // TODO: Make this async
@@ -206,8 +196,10 @@ void loadShaders() {
 
 void createMaterials() {
     mat = material(shaderProgram);
-    mat.textures.push_back({brickAlbedoTexture.id, GL_TEXTURE0});
-    mat.textures.push_back({brickRoughnessTexture.id, GL_TEXTURE1});
+
+    texture albedo = texture("../../assets/textures/apple/apple_albedo.jpg");
+    if(albedo.id == 0) exit(EXIT_FAILURE);
+    mat.textures.push_back({albedo.id, GL_TEXTURE0});
 
     mat.ambient   = glm::vec4(0.2, 0.2, 0.2, 1);
     mat.diffuse   = glm::vec4(1.0, 1.0, 1.0, 1);
@@ -217,24 +209,32 @@ void createMaterials() {
 
 void createMeshes() {
     // Load suzanne mesh
-    mesh suzanne;
-    const char* suzannePath = "../../assets/models/suzanne.obj";
-    if(!importModel(suzannePath, &suzanne)) {
-        printf("failed to load model '%s'\n", suzannePath);
+    mesh apple;
+    const char* applePath = "../../assets/models/apple.obj";
+    if(!importModel(applePath, &apple)) {
+        printf("failed to load model '%s'\n", applePath);
         exit(EXIT_FAILURE);
     }
 
-    suzanne.mat = mat;
-    suzanne.rotationAxis = glm::normalize(glm::vec3(1.0f, 0.75f, 0.5f));
+    apple.mat = mat;
+    apple.rotationAxis = glm::normalize(glm::vec3(0.0, 1.0, 0.0));
+    apple.scale = glm::vec3(10.0, 10.0, 10.0);
 
-    meshes.push_back(suzanne);
+    meshes.push_back(apple);
 }
 
 void createLights() {
     lights.push_back({
-        glm::vec4(5.0, 2.0, 2.0, 1.0),
+        glm::vec4(2.0, 2.0, 1.0, 1.0),
         glm::vec4(0.2, 0.2, 0.2, 1.0),
         glm::vec4(1.0, 1.0, 1.0, 1.0),
         glm::vec4(1.0, 1.0, 1.0, 1.0)
+    });
+
+    lights.push_back({
+        glm::vec4(-0.5, 0.0, 2.0, 1.0),
+        glm::vec4(0.0, 0.0, 0.0, 1.0),
+        glm::vec4(0.5, 0.5, 0.6, 1.0),
+        glm::vec4(0.0, 0.0, 0.0, 0.0)
     });
 }

@@ -36,3 +36,7 @@ target_link_libraries(Graphics_Project PRIVATE glm)
 # soil2
 add_subdirectory(lib/soil2 EXCLUDE_FROM_ALL)
 target_link_libraries(Graphics_Project PRIVATE soil2)
+
+# tinyobjloader
+add_subdirectory(lib/tinyobjloader EXCLUDE_FROM_ALL)
+target_link_libraries(Graphics_Project PRIVATE tinyobjloader)

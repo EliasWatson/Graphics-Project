@@ -12,6 +12,8 @@ struct mesh {
     glm::vec3 position, rotationAxis, scale;
     float rotation;
 
+    glm::vec3 boundMin, boundMax;
+
     std::vector<GLuint> vbo;
     GLuint vboIndices;
     GLsizei vertexCount;

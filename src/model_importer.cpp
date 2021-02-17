@@ -1,14 +1,14 @@
 #include "model_importer.hpp"
 
+#define TINYOBJLOADER_IMPLEMENTATION
+
+#include <tiny_obj_loader.h>
+#include <iostream>
 #include <GL/glew.h>
 #include <vector>
 #include <unordered_map>
 #include <tuple>
 #include <functional>
-#include <stdio.h>
-#include <stdlib.h>
-
-#define ERROR { success = false; break; }
 
 typedef std::tuple<int, int, int> triplet;
 
@@ -18,96 +18,97 @@ struct triplet_hash : public std::unary_function<triplet, std::size_t> {
     }
 };
 
-void consumeLine(FILE* file) {
-    int c;
-    while((c = fgetc(file)) != EOF) {
-        if(c == '\n') break;
-    }
-}
-
 bool importModel(const char* path, mesh* model) {
-    bool success = true;
+    // Setup loader config
+    tinyobj::ObjReaderConfig readerConfig;
+    readerConfig.mtl_search_path = "./";
 
-    std::vector<float> position;
-    std::vector<float> uv;
-    std::vector<float> normal;
-
-    FILE* file = fopen(path, "r");
-
-    // Parse v, vt, & vn
-    char type[3];
-    float x, y, z;
-    while(success) {
-        if(fscanf(file, "%2s ", type) <= 0) ERROR;
-        if(type[0] == 's' || type[0] == 'f') break;
-
-        // Skip lines that we don't support
-        if(type[0] != 'v') {
-            consumeLine(file);
-            continue;
+    // Read data from file
+    tinyobj::ObjReader reader;
+    if(!reader.ParseFromFile(path, readerConfig)) {
+        if(!reader.Error().empty()) {
+            std::cerr << "[!] Model Loader: " << reader.Error();
         }
-
-        switch(type[1]) {
-            case 0:
-                if(fscanf(file, "%f %f %f\n", &x, &y, &z) <= 0) ERROR;
-                position.push_back(x);
-                position.push_back(y);
-                position.push_back(z);
-                break;
-
-            case 't':
-                if(fscanf(file, "%f %f\n", &x, &y) <= 0) ERROR;
-                uv.push_back(x);
-                uv.push_back(y);
-                break;
-
-            case 'n':
-                if(fscanf(file, "%f %f %f\n", &x, &y, &z) <= 0) ERROR;
-                normal.push_back(x);
-                normal.push_back(y);
-                normal.push_back(z);
-                break;
-        }
+        return true;
     }
 
-    std::unordered_map<const std::tuple<int, int, int>, int, triplet_hash> vertex_map;
-    std::vector<float> final_position;
-    std::vector<float> final_uv;
-    std::vector<float> final_normal;
-    std::vector<int> final_index;
+    // Check for warnings
+    if(!reader.Warning().empty()) {
+        std::cerr << "[*] Model Loader: " << reader.Warning();
+    }
 
-    // Parse f
+    // Get data
+    auto& attrib = reader.GetAttrib();
+    auto& shapes = reader.GetShapes();
+    //auto& materials = reader.GetMaterials();
+
+    // Load into vectors and handle vertices with the same index but different attributes
+    std::vector<float> positions;
+    std::vector<float> uvs;
+    std::vector<float> normals;
+    std::vector<int> indices;
+    std::unordered_map<const std::tuple<int, int, int>, int, triplet_hash> indexMap;
     int currentIndex = 0;
-    int p[3], u[3], n[3];
-    while(success) {
-        if(type[0] == 'f') {
-            if(fscanf(file, "%d/%d/%d %d/%d/%d %d/%d/%d\n", &p[0], &u[0], &n[0], &p[1], &u[1], &n[1], &p[2], &u[2], &n[2]) <= 0) ERROR;
-            for(int i = 0; i < 3; ++i) {
-                std::tuple<int, int, int> index = std::make_tuple(p[i], u[i], n[i]);
-                auto iter = vertex_map.find(index);
 
-                if(iter == vertex_map.end()) {
-                    for(int j = 0; j < 3; ++j) final_position.push_back(position[((p[i]-1) * 3) + j]);
-                    for(int j = 0; j < 2; ++j) final_uv.push_back(uv[((u[i]-1) * 2) + j]);
-                    for(int j = 0; j < 3; ++j) final_normal.push_back(normal[((n[i]-1) * 3) + j]);
-                    vertex_map.emplace(index, currentIndex);
-                    final_index.push_back(currentIndex);
+    int numNonTriangle = 0;
+    glm::vec3 boundMin( INFINITY,  INFINITY,  INFINITY);
+    glm::vec3 boundMax(-INFINITY, -INFINITY, -INFINITY);
+
+    for(size_t s = 0; s < shapes.size(); ++s) {
+        size_t index_offset = 0;
+        for(size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); ++f) {
+            int fv = shapes[s].mesh.num_face_vertices[f];
+
+            // TODO: Triangulate quads and ngons
+            if(fv != 3) {
+                ++numNonTriangle;
+                continue;
+            }
+
+            for(size_t v = 0; v < fv; ++v) {
+                tinyobj::index_t idx = shapes[s].mesh.indices[index_offset + v];
+                triplet key = std::make_tuple(idx.vertex_index, idx.texcoord_index, idx.normal_index);
+
+                auto iter = indexMap.find(key);
+                if(iter == indexMap.end()) {
+                    for(int i = 0; i < 3; ++i) {
+                        float n = attrib.vertices[3*idx.vertex_index+i];
+
+                        if(n < boundMin[i]) boundMin[i] = n;
+                        if(n > boundMax[i]) boundMax[i] = n;
+
+                        positions.push_back(n);
+                    }
+                    
+                    for(int i = 0; i < 2; ++i) {
+                        uvs.push_back(attrib.texcoords[2*idx.texcoord_index+i]);
+                    }
+                    
+                    for(int i = 0; i < 3; ++i) {
+                        normals.push_back(attrib.normals[3*idx.normal_index+i]);
+                    }
+                    
+                    indices.push_back(currentIndex);
+                    indexMap.emplace(key, currentIndex);
                     currentIndex++;
                 } else {
-                    final_index.push_back(iter->second);
+                    indices.push_back(iter->second);
                 }
             }
-        } else {
-            // Skip lines that we don't support
-            consumeLine(file);
-        }
 
-        if(fscanf(file, "%2s ", type) <= 0) break;
+            index_offset += fv;
+        }
     }
 
-    fclose(file);
-
-    if(!success) return false;
+    if(numNonTriangle > 0) {
+        std::cerr
+        << "[*] Mesh Loader: "
+        << numNonTriangle
+        << " non-triangle faces in '"
+        << path
+        << "'"
+        << std::endl;
+    }
 
     // Load data
     GLuint vao[1];
@@ -118,22 +119,24 @@ bool importModel(const char* path, mesh* model) {
     glGenBuffers(4, vbo);
 
     glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * final_position.size(), &final_position[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * positions.size(), &positions[0], GL_STATIC_DRAW);
 
     glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * final_uv.size(), &final_uv[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * uvs.size(), &uvs[0], GL_STATIC_DRAW);
 
     glBindBuffer(GL_ARRAY_BUFFER, vbo[2]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * final_normal.size(), &final_normal[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * normals.size(), &normals[0], GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[3]);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(int) * final_index.size(), &final_index[0], GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(int) * indices.size(), &indices[0], GL_STATIC_DRAW);
 
     // Construct mesh instance
     *model = mesh();
     model->vbo = std::vector<GLuint>(vbo, vbo + 3);
     model->vboIndices = vbo[3];
-    model->vertexCount = final_index.size();
+    model->vertexCount = indices.size();
+    model->boundMin = boundMin;
+    model->boundMax = boundMax;
 
     return true;
 }
