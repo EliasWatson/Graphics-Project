@@ -2,12 +2,14 @@
 #define H_TEXTURE
 
 #include <GL/glew.h>
+#include <string>
 
 struct texture {
     GLuint id;
+    std::string type;
 
     texture() { }
-    texture(const char* path);
+    texture(GLuint id, std::string type);
 };
 
 #endif

@@ -1,13 +1,13 @@
 #include "shader.hpp"
 
+#include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 #include <fstream>
 #include <string>
 
 shader::shader(
     std::vector<shader_source> src,
-    std::vector<shader_attribute> attributes,
-    std::vector<shader_uniform> uniforms
+    std::vector<shader_attribute> attributes
 ) {
     std::vector<GLuint> compiledShaders;
     for(shader_source s : src) {
@@ -24,20 +24,10 @@ shader::shader(
 
     compiled = true;
     this->attributes = attributes;
-    this->uniforms = uniforms;
-    this->uniformLocs = std::vector<GLuint>(uniforms.size());
 }
 
-std::vector<GLuint>* shader::use(std::vector<GLuint> vbo, std::vector<shader_texture> textures) {
+void shader::use(std::vector<GLuint> vbo) {
     glUseProgram(this->id);
-
-    if(!this->updatedThisFrame) {
-        for(int i = 0; i < this->uniformLocs.size(); ++i) {
-            shader_uniform uniform = this->uniforms[i];
-            this->uniformLocs[i] = glGetUniformLocation(this->id, uniform.name);
-        }
-        this->updatedThisFrame = true;
-    }
 
     for(int i = 0; i < this->attributes.size(); ++i) {
         shader_attribute sa = this->attributes[i];
@@ -45,17 +35,36 @@ std::vector<GLuint>* shader::use(std::vector<GLuint> vbo, std::vector<shader_tex
         glVertexAttribPointer(sa.location, sa.size, sa.type, sa.normalize ? GL_TRUE : GL_FALSE, sa.stride, 0);
         glEnableVertexAttribArray(sa.location);
     }
-
-    for(shader_texture st : textures) {
-        glActiveTexture(st.slot);
-        glBindTexture(GL_TEXTURE_2D, st.id);
-    }
-
-    return &this->uniformLocs;
 }
 
-void shader::reset() {
-    this->updatedThisFrame = false;
+void shader::setFloat(const char* name, float val) {
+    GLuint loc = glGetUniformLocation(this->id, name);
+    glUniform1f(loc, val);
+}
+
+void shader::setVec4(const char* name, glm::vec4 val) {
+    GLuint loc = glGetUniformLocation(this->id, name);
+    glUniform4fv(loc, 1, glm::value_ptr(val));
+}
+
+void shader::setMat4(const char* name, glm::mat4 val) {
+    GLuint loc = glGetUniformLocation(this->id, name);
+    glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(val));
+}
+
+void shader::setFloat(const char* name, GLsizei count, float* val) {
+    GLuint loc = glGetUniformLocation(this->id, name);
+    glUniform1fv(loc, count, val);
+}
+
+void shader::setVec4(const char* name, GLsizei count, glm::f32* val) {
+    GLuint loc = glGetUniformLocation(this->id, name);
+    glUniform4fv(loc, count, val);
+}
+
+void shader::setMat4(const char* name, GLsizei count, glm::f32* val) {
+    GLuint loc = glGetUniformLocation(this->id, name);
+    glUniformMatrix4fv(loc, count, GL_FALSE, val);
 }
 
 bool shader::loadShader(GLuint* id, GLenum type, const char* src) {

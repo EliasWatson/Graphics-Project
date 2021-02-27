@@ -6,26 +6,18 @@
 #include <vector>
 #include <stack>
 
-#include "material.hpp"
-
 struct mesh {
-    glm::vec3 position, rotationAxis, scale;
-    float rotation;
-
     glm::vec3 boundMin, boundMax;
 
+    GLuint vao;
     std::vector<GLuint> vbo;
-    GLuint vboIndices;
+    GLuint ebo;
     GLsizei vertexCount;
 
-    material mat;
+    int materialIndex = 0;
     bool invertBackface;
 
-    // These are declared to help prevent stack allocations during render time
-    glm::mat4 invMvMat;
-
     mesh();
-    int render(std::stack<glm::mat4>* matrixStack, glm::mat4 perspectiveMatrix, float currentTime, material::light_data lightData);
 };
 
 #endif
