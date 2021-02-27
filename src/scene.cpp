@@ -5,6 +5,8 @@
 #include <iostream>
 #include <stack>
 
+#include <glm/ext/matrix_transform.hpp>
+
 // Constants
 const float empty_4f[4] = {0.0, 0.0, 0.0, 1.0};
 
@@ -24,7 +26,9 @@ void scene::render() {
 
     // Get camera
     camera* cam = &this->cameras[this->mainCamera];
-    cam->calculateViewMatrix();
+    // cam->pos = glm::vec3(0.0f, 1.0f, 4.0f);
+    // cam->dir = glm::lookAt(cam->pos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    // cam->calculateViewMatrix();
 
     //fprintf(stderr, "[*] ()");
 

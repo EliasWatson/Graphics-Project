@@ -56,7 +56,6 @@ void init(GLFWwindow* window) {
     mainScene = new scene(scene::DEFAULT);
     importScene(mainScene, "../../assets/scenes/test_scene/gltf_test_scene.gltf");
     mainScene->mainCamera = 0;
-    mainScene->cameras[0].pos = glm::vec3(0.0, 0.0, -4.0);
 
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);

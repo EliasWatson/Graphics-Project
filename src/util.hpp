@@ -28,10 +28,10 @@ inline glm::vec4 convertVec3to4(aiColor3D vec) {
 
 inline glm::mat4 convertMat4(aiMatrix4x4 mat) {
     return glm::mat4(
-        glm::vec4(mat.a1, mat.a2, mat.a3, mat.a4),
-        glm::vec4(mat.b1, mat.b2, mat.b3, mat.b4),
-        glm::vec4(mat.c1, mat.c2, mat.c3, mat.c4),
-        glm::vec4(mat.d1, mat.d2, mat.d3, mat.d4)
+        mat[0][1], mat[0][2], mat[0][3], mat[0][4],
+        mat[1][1], mat[1][2], mat[1][3], mat[1][4],
+        mat[2][1], mat[2][2], mat[2][3], mat[2][4],
+        mat[3][1], mat[3][2], mat[3][3], mat[3][4]
     );
 }
 
