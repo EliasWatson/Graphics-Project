@@ -1,5 +1,22 @@
 # Time Log
-**Total Time: 26 Hours**
+**Total Time: 38 Hours**
+
+## 2021-03-01
+**2 Hours**
+- Debugging scene importer
+
+## 2021-02-22
+**5 Hours**
+- Debugging scene importer
+
+## 2021-02-19
+**3 Hours**
+- Worked on scene importer
+
+## 2021-02-18
+**2 Hours**
+- Switched to Assimp for model/scene loading
+- Started work on scene importer
 
 ## 2021-02-17
 **4 Hours**
