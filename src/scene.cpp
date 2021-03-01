@@ -100,6 +100,14 @@ void scene::loadDefaultShaders() {
         GL_FLOAT,           // GLenum type = GL_FLOAT;
         true                // bool normalize = false;
     });
+    attributes.push_back({
+        GL_ARRAY_BUFFER,    // GLenum bufferType;
+        3,                  // int location;
+        3,                  // int size;
+        0,                  // int stride = 0;
+        GL_FLOAT,           // GLenum type = GL_FLOAT;
+        true                // bool normalize = false;
+    });
 
     this->shaderProgram = shader(src, attributes);
     if(!shaderProgram.compiled) exit(EXIT_FAILURE);

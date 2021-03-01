@@ -55,7 +55,6 @@ int main() {
 void init(GLFWwindow* window) {
     mainScene = new scene(scene::DEFAULT);
     importScene(mainScene, "../../assets/scenes/test_scene/gltf_test_scene.gltf");
-    mainScene->mainCamera = 0;
 
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);

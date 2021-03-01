@@ -28,11 +28,18 @@ inline glm::vec4 convertVec3to4(aiColor3D vec) {
 
 inline glm::mat4 convertMat4(aiMatrix4x4 mat) {
     return glm::mat4(
-        mat[0][1], mat[0][2], mat[0][3], mat[0][4],
-        mat[1][1], mat[1][2], mat[1][3], mat[1][4],
-        mat[2][1], mat[2][2], mat[2][3], mat[2][4],
-        mat[3][1], mat[3][2], mat[3][3], mat[3][4]
+        glm::vec4(mat.a1, mat.b1, mat.c1, mat.d1),
+        glm::vec4(mat.a2, mat.b2, mat.c2, mat.d2),
+        glm::vec4(mat.a3, mat.b3, mat.c3, mat.d3),
+        glm::vec4(mat.a4, mat.b4, mat.c4, mat.d4)
     );
+}
+
+inline void printMat4(glm::mat4 mat) {
+    glm::mat4 t = glm::transpose(mat);
+    for(int i = 0; i < 4; ++i) {
+        fprintf(stderr, "%.2f\t%.2f\t%.2f\t%.2f\n", t[i].x, t[i].y, t[i].z, t[i].w);
+    }
 }
 
 #endif

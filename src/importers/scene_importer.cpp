@@ -62,7 +62,12 @@ bool processNode(scene* internalScene, aiNode* node, const aiScene* tempScene, e
 
     // Handle camera node
     if(strcmp(node->mName.C_Str(), "Camera") == 0) {
-        internalScene->cameras[internalScene->mainCamera].vMat = e->modelMatrix;
+        glm::mat4 t_mat = e->modelMatrix;
+        glm::vec3 pos = t_mat[3];
+
+        internalScene->cameras[internalScene->mainCamera].vMat = glm::lookAt(pos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    } else if (strcmp(node->mName.C_Str(), "Point") == 0) {
+        internalScene->lights[0].pos = e->modelMatrix[3];
     }
 
     // Import meshes
@@ -83,15 +88,6 @@ bool processNode(scene* internalScene, aiNode* node, const aiScene* tempScene, e
 bool processCamera(scene* internalScene, aiCamera* inCamera, const aiScene* tempScene) {
     camera cam;
 
-    // cam.pos = convertVec3(inCamera->mPosition);
-    /*
-    cam.pos = glm::vec3(0.0, 1.0, 3.0); // TODO: Change
-    cam.dir = glm::lookAt(
-        cam.pos,
-        convertVec3(inCamera->mLookAt),
-        convertVec3(inCamera->mUp)
-    );
-    */
     cam.fov = glm::degrees(inCamera->mHorizontalFOV);
     cam.aspect = inCamera->mAspect;
     cam.clipNear = inCamera->mClipPlaneNear;
