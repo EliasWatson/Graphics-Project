@@ -13,24 +13,22 @@ const float empty_4f[4] = {0.0, 0.0, 0.0, 1.0};
 scene::scene(shader_type type) {
     switch(type) {
         case DEFAULT:
+        default:
             this->loadDefaultShaders();
             break;
     }
 }
 
-void scene::render() {
+void scene::render(float time) {
     // If we don't have a camera, we can't render anything
     if(this->mainCamera < 0 || this->mainCamera >= this->cameras.size()) return;
 
     // TODO: Call update function
+    this->lights[0].pos.x = cosf(time) * 2.0f;
+    this->lights[0].pos.z = sinf(time) * 2.0f;
 
     // Get camera
     camera* cam = &this->cameras[this->mainCamera];
-    // cam->pos = glm::vec3(0.0f, 1.0f, 4.0f);
-    // cam->dir = glm::lookAt(cam->pos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    // cam->calculateViewMatrix();
-
-    //fprintf(stderr, "[*] ()");
 
     // Create Model-View matrix stack
     if(!this->mvStack.empty()) {

@@ -12,7 +12,7 @@ bool processNode(scene* internalScene, aiNode* node, const aiScene* tempScene, e
 bool processCamera(scene* internalScene, aiCamera* inCamera, const aiScene* tempScene);
 bool processLight(scene* internalScene, aiLight* inLight, const aiScene* tempScene);
 bool processMaterial(scene* internalScene, aiMaterial* inMaterial, const aiScene* tempScene);
-bool processTextures(std::vector<texture>* textures, std::string baseDirectory, aiMaterial* inMaterial, aiTextureType type, std::string typeName);
+bool processTextures(std::vector<texture>* textures, std::string baseDirectory, aiMaterial* inMaterial, aiTextureType type, texture::type textureType);
 bool processMesh(scene* internalScene, aiMesh* inMesh, const aiScene* tempScene);
 
 bool importScene(scene* internalScene, std::string path) {
@@ -23,7 +23,7 @@ bool importScene(scene* internalScene, std::string path) {
         fprintf(stderr, "[!] Model Loader: %s\n", importer.GetErrorString());
         return true;
     }
-    internalScene->baseDirectory = path.substr(0, path.find_last_of('/'));
+    internalScene->baseDirectory = path.substr(0, path.find_last_of('/') + 1);
 
     bool returnValue = false;
 
@@ -116,15 +116,15 @@ bool processMaterial(scene* internalScene, aiMaterial* inMaterial, const aiScene
     material mat(internalScene->shaderProgram);
 
     mat.textures = std::vector<texture>();
-    processTextures(&mat.textures, internalScene->baseDirectory, inMaterial, aiTextureType_DIFFUSE, "albedo");
-    processTextures(&mat.textures, internalScene->baseDirectory, inMaterial, aiTextureType_SPECULAR, "specular");
-    processTextures(&mat.textures, internalScene->baseDirectory, inMaterial, aiTextureType_NORMALS, "normal");
+    processTextures(&mat.textures, internalScene->baseDirectory, inMaterial, aiTextureType_DIFFUSE, texture::ALBEDO);
+    // processTextures(&mat.textures, internalScene->baseDirectory, inMaterial, aiTextureType_SPECULAR, "specular");
+    processTextures(&mat.textures, internalScene->baseDirectory, inMaterial, aiTextureType_NORMALS, texture::NORMAL);
 
     internalScene->materials.push_back(mat);
     return false;
 }
 
-bool processTextures(std::vector<texture>* textures, std::string baseDirectory, aiMaterial* inMaterial, aiTextureType type, std::string typeName) {
+bool processTextures(std::vector<texture>* textures, std::string baseDirectory, aiMaterial* inMaterial, aiTextureType type, texture::type textureType) {
     bool returnValue = false;
 
     for(unsigned int i = 0; i < inMaterial->GetTextureCount(type); ++i) {
@@ -132,7 +132,7 @@ bool processTextures(std::vector<texture>* textures, std::string baseDirectory, 
         inMaterial->GetTexture(type, i, &str);
 
         texture tex;
-        returnValue = returnValue || importTexture(&tex, baseDirectory + std::string(str.C_Str()), typeName);
+        returnValue = returnValue || importTexture(&tex, baseDirectory + std::string(str.C_Str()), textureType);
 
         textures->push_back(tex);
     }

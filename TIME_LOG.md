@@ -1,9 +1,11 @@
 # Time Log
-**Total Time: 38 Hours**
+**Total Time: 41 Hours**
 
 ## 2021-03-01
-**2 Hours**
+**5 Hours**
 - Debugging scene importer
+- Added dragon scene
+- Implemented normal mapping
 
 ## 2021-02-22
 **5 Hours**

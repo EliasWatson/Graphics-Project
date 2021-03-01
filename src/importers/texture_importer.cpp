@@ -2,7 +2,7 @@
 
 #include <SOIL2.h>
 
-bool importTexture(texture* tex, std::string path, std::string type) {
+bool importTexture(texture* tex, std::string path, texture::type texture_type) {
     GLuint id = SOIL_load_OGL_texture(path.c_str(), SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_INVERT_Y);
     
     // Generate mipmaps
@@ -22,7 +22,7 @@ bool importTexture(texture* tex, std::string path, std::string type) {
     }
 
     // Create texture object
-    *tex = texture(id, type);
+    *tex = texture(id, texture_type);
 
     return false;
 }

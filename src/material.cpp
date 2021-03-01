@@ -6,11 +6,17 @@ void material::render(model_data md, params p, light_data l) {
     // Load shader
     this->shaderProgram.use(md.vbo);
 
+    this->shaderProgram.setFloat("albedo_sampler_contrib", 0.0f);
+    this->shaderProgram.setFloat("roughness_sampler_contrib", 0.0f);
+    this->shaderProgram.setFloat("normal_sampler_contrib", 0.0f);
+
     // Load textures
     for(int i = 0; i < this->textures.size(); ++i) {
-        glActiveTexture(GL_TEXTURE0 + i);
+        glActiveTexture(GL_TEXTURE0 + this->textures[i].tex_type);
         glBindTexture(GL_TEXTURE_2D, this->textures[i].id);
-        this->shaderProgram.setFloat((textures[i].type + "_sampler").c_str(), i);
+        std::string name = texture_type_names[textures[i].tex_type];
+        this->shaderProgram.setFloat((name + "_sampler").c_str(), this->textures[i].tex_type);
+        this->shaderProgram.setFloat((name + "_sampler_contrib").c_str(), 1.0f);
     }
     glActiveTexture(GL_TEXTURE0);
 

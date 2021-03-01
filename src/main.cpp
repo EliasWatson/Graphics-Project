@@ -54,7 +54,7 @@ int main() {
 
 void init(GLFWwindow* window) {
     mainScene = new scene(scene::DEFAULT);
-    importScene(mainScene, "../../assets/scenes/test_scene/gltf_test_scene.gltf");
+    importScene(mainScene, "../../assets/scenes/dragon_scene/dragon_scene.gltf");
 
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);
@@ -74,5 +74,5 @@ void display(GLFWwindow* window, double currentTime) {
     glEnable(GL_CULL_FACE);
 
     // Render scene
-    if(mainScene != nullptr) mainScene->render();
+    if(mainScene != nullptr) mainScene->render(currentTime);
 }

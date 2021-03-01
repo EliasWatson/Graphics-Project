@@ -1,6 +1,6 @@
 #include "texture.hpp"
 
-texture::texture(GLuint id, std::string type) {
+texture::texture(GLuint id, type tex_type) {
     this->id = id;
-    this->type = type;
+    this->tex_type = tex_type;
 }

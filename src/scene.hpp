@@ -35,7 +35,7 @@ struct scene {
     std::stack<glm::mat4> mvStack;
 
     scene(shader_type type);
-    void render();
+    void render(float time);
     void resize(int width, int height);
 
 private:
