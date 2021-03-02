@@ -1,5 +1,9 @@
 # Time Log
-**Total Time: 41 Hours**
+**Total Time: 42 Hours**
+
+## 2021-03-02
+**1 Hours**
+- Added ImGui
 
 ## 2021-03-01
 **5 Hours**
