@@ -64,8 +64,7 @@ bool processNode(scene* internalScene, aiNode* node, const aiScene* tempScene, e
     if(strcmp(node->mName.C_Str(), "Camera") == 0) {
         glm::mat4 t_mat = e->modelMatrix;
         glm::vec3 pos = t_mat[3];
-
-        internalScene->cameras[internalScene->mainCamera].vMat = glm::lookAt(pos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        internalScene->cameras[internalScene->mainCamera].pos = pos;
     } else if (strcmp(node->mName.C_Str(), "Point") == 0) {
         internalScene->lights[0].pos = e->modelMatrix[3];
     }

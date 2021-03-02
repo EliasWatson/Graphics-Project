@@ -36,6 +36,7 @@ struct scene {
 
     scene(shader_type type);
     void render(float time);
+    void renderGUI();
     void resize(int width, int height);
 
 private:

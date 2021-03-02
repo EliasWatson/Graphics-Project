@@ -1,7 +1,16 @@
 cmake_minimum_required(VERSION 3.1)
 project(Graphics_Project)
 
+include_directories(lib/imgui lib/imgui/backends)
+
 add_executable(Graphics_Project
+    lib/imgui/imgui.cpp
+    lib/imgui/imgui_draw.cpp
+    lib/imgui/imgui_tables.cpp
+    lib/imgui/imgui_widgets.cpp
+    lib/imgui/backends/imgui_impl_opengl3.cpp
+    lib/imgui/backends/imgui_impl_glfw.cpp
+
     src/main.cpp
     src/util.hpp
     src/util.cpp

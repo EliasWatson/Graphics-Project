@@ -6,6 +6,7 @@
 #include <stack>
 
 #include <glm/ext/matrix_transform.hpp>
+#include <imgui.h>
 
 // Constants
 const float empty_4f[4] = {0.0, 0.0, 0.0, 1.0};
@@ -29,6 +30,7 @@ void scene::render(float time) {
 
     // Get camera
     camera* cam = &this->cameras[this->mainCamera];
+    cam->updateViewMat();
 
     // Create Model-View matrix stack
     if(!this->mvStack.empty()) {
@@ -60,6 +62,12 @@ void scene::render(float time) {
 
     // Pop view matrix
     this->mvStack.pop();
+}
+
+void scene::renderGUI() {
+    ImGui::Begin("Camera");
+    ImGui::SliderFloat3("position", &this->cameras[this->mainCamera].pos[0], -10.0f, 10.0f);
+    ImGui::End();
 }
 
 void scene::resize(int width, int height) {

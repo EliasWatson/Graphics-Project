@@ -9,6 +9,9 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <imgui.h>
+#include <imgui_impl_opengl3.h>
+#include <imgui_impl_glfw.h>
 
 #include "util.hpp"
 #include "scene.hpp"
@@ -36,17 +39,37 @@ int main() {
     // Initialize GLEW
     if(glewInit() != GLEW_OK) exit(EXIT_FAILURE);
 
+    // Initialize ImGui
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init("#version 430");
+    ImGui::StyleColorsDark();
+
     // Render
     glfwSwapInterval(1);
     init(window);
 
     while(!glfwWindowShouldClose(window)) {
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame(); 
+
         display(window, glfwGetTime());
+
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
 
     // Cleanup
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+    
     glfwDestroyWindow(window);
     glfwTerminate();
     exit(EXIT_SUCCESS);
@@ -74,5 +97,8 @@ void display(GLFWwindow* window, double currentTime) {
     glEnable(GL_CULL_FACE);
 
     // Render scene
-    if(mainScene != nullptr) mainScene->render(currentTime);
+    if(mainScene != nullptr) {
+        mainScene->render(currentTime);
+        mainScene->renderGUI();
+    }
 }
