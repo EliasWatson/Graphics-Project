@@ -1,7 +1,9 @@
 #ifndef H_SHADER
 #define H_SHADER
 
+#include "texture.hpp"
 #include <GL/glew.h>
+#include <glm/glm.hpp>
 #include <vector>
 
 struct shader_source {
@@ -27,29 +29,27 @@ struct shader_uniform {
     const char* name;
 };
 
-struct shader_texture {
-    GLuint id;
-    GLenum slot;
-};
-
 struct shader {
     GLuint id;
     std::vector<shader_attribute> attributes;
-    std::vector<shader_uniform> uniforms;
-    std::vector<GLuint> uniformLocs;
 
     bool compiled = false;
-    bool updatedThisFrame = false;
 
     shader() { }
     shader(
         std::vector<shader_source> src,
-        std::vector<shader_attribute> attributes,
-        std::vector<shader_uniform> uniforms
+        std::vector<shader_attribute> attributes
     );
 
-    std::vector<GLuint>* use(std::vector<GLuint> vbo, std::vector<shader_texture> textures);
-    void reset();
+    void use(std::vector<GLuint> vbo);
+
+    void setFloat(const char* name, float val);
+    void setVec4(const char* name, glm::vec4 val);
+    void setMat4(const char* name, glm::mat4 val);
+
+    void setFloat(const char* name, GLsizei count, float* val);
+    void setVec4(const char* name, GLsizei count, glm::f32* val);
+    void setMat4(const char* name, GLsizei count, glm::f32* val);
 
 private:
     bool loadShader(GLuint* id, GLenum type, const char* src);

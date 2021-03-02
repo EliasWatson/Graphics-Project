@@ -2,6 +2,8 @@
 #define H_MATERIAL
 
 #include "shader.hpp"
+#include "texture.hpp"
+
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <vector>
@@ -29,9 +31,11 @@ struct material {
     };
 
     shader shaderProgram;
-    glm::vec4 ambient, diffuse, specular;
-    float shininess;
-    std::vector<shader_texture> textures;
+    glm::vec4 ambient = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
+    glm::vec4 diffuse = glm::vec4(1.0f, 1.0, 1.0f, 1.0f);
+    glm::vec4 specular = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    float shininess = 1.0f;
+    std::vector<texture> textures;
 
     material() { }
     material(shader shaderProgram) : shaderProgram(shaderProgram) { }

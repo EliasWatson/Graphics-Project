@@ -4,23 +4,37 @@
 
 void material::render(model_data md, params p, light_data l) {
     // Load shader
-    std::vector<GLuint>* uniformLocs = this->shaderProgram.use(md.vbo, this->textures);
+    this->shaderProgram.use(md.vbo);
+
+    this->shaderProgram.setFloat("albedo_sampler_contrib", 0.0f);
+    this->shaderProgram.setFloat("roughness_sampler_contrib", 0.0f);
+    this->shaderProgram.setFloat("normal_sampler_contrib", 0.0f);
+
+    // Load textures
+    for(int i = 0; i < this->textures.size(); ++i) {
+        glActiveTexture(GL_TEXTURE0 + this->textures[i].tex_type);
+        glBindTexture(GL_TEXTURE_2D, this->textures[i].id);
+        std::string name = texture_type_names[textures[i].tex_type];
+        this->shaderProgram.setFloat((name + "_sampler").c_str(), this->textures[i].tex_type);
+        this->shaderProgram.setFloat((name + "_sampler_contrib").c_str(), 1.0f);
+    }
+    glActiveTexture(GL_TEXTURE0);
 
     // Copy to uniforms
-    glUniformMatrix4fv(uniformLocs->at(0), 1, GL_FALSE, glm::value_ptr(p.perspective));
-    glUniformMatrix4fv(uniformLocs->at(1), 1, GL_FALSE, glm::value_ptr(p.modelView));
-    glUniformMatrix4fv(uniformLocs->at(2), 1, GL_FALSE, glm::value_ptr(p.invModelView));
-    glUniform1f(uniformLocs->at(3), p.time);
+    this->shaderProgram.setMat4("proj_matrix", p.perspective);
+    this->shaderProgram.setMat4("mv_matrix",   p.modelView);
+    this->shaderProgram.setMat4("norm_matrix", p.invModelView);
+    this->shaderProgram.setFloat("tf", p.time);
 
-    glUniform4fv(uniformLocs->at(4), MAX_LIGHTS, l.pos[0]);
-    glUniform4fv(uniformLocs->at(5), MAX_LIGHTS, l.ambient[0]);
-    glUniform4fv(uniformLocs->at(6), MAX_LIGHTS, l.diffuse[0]);
-    glUniform4fv(uniformLocs->at(7), MAX_LIGHTS, l.specular[0]);
+    this->shaderProgram.setVec4("light_pos",      MAX_LIGHTS, l.pos[0]);
+    this->shaderProgram.setVec4("light_ambient",  MAX_LIGHTS, l.ambient[0]);
+    this->shaderProgram.setVec4("light_diffuse",  MAX_LIGHTS, l.diffuse[0]);
+    this->shaderProgram.setVec4("light_specular", MAX_LIGHTS, l.specular[0]);
 
-    glUniform4fv(uniformLocs->at(8),  1, glm::value_ptr(this->ambient));
-    glUniform4fv(uniformLocs->at(9),  1, glm::value_ptr(this->diffuse));
-    glUniform4fv(uniformLocs->at(10), 1, glm::value_ptr(this->specular));
-    glUniform1f (uniformLocs->at(11), this->shininess);
+    this->shaderProgram.setVec4("ambient_color",  this->ambient);
+    this->shaderProgram.setVec4("diffuse_color",  this->diffuse);
+    this->shaderProgram.setVec4("specular_color", this->specular);
+    this->shaderProgram.setFloat("shininess_factor", this->shininess);
 
     // Setup options
     glEnable(GL_DEPTH_TEST);
