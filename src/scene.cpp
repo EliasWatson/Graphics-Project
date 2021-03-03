@@ -25,25 +25,19 @@ void scene::render(float time) {
     if(this->mainCamera < 0 || this->mainCamera >= this->cameras.size()) return;
 
     // TODO: Call update function
-    this->lights[0].pos.x = cosf(time) * 2.0f;
-    this->lights[0].pos.z = sinf(time) * 2.0f;
+    this->lights[0].parentEntity->pos.x = cosf(time) * 2.0f;
+    this->lights[0].parentEntity->pos.z = sinf(time) * 2.0f;
+
+    this->rootNode->updateWorldPosition(glm::mat4(1.0f));
 
     // Get camera
     camera* cam = &this->cameras[this->mainCamera];
     cam->updateViewMat();
 
-    // Create Model-View matrix stack
-    if(!this->mvStack.empty()) {
-        // This shouldn't happen
-        std::cerr << "[*] Model-view stack wasn't emptied the last frame\n" << std::endl;
-        while(!this->mvStack.empty()) this->mvStack.pop();
-    }
-    this->mvStack.push(cam->vMat);
-
     // Update light data
     for(int i = 0; i < MAX_LIGHTS; ++i) {
         if(i < this->lights.size()) {
-            glm::vec4 l_pos = mvStack.top() * this->lights[i].pos;
+            glm::vec4 l_pos = cam->vMat * this->lights[i].parentEntity->worldPos;
 
             COPY_VEC4(this->lightData.pos[i],      l_pos);
             COPY_VEC4(this->lightData.ambient[i],  this->lights[i].ambient);
@@ -58,15 +52,12 @@ void scene::render(float time) {
     }
 
     // Render entities
-    this->rootNode.render(this, cam);
-
-    // Pop view matrix
-    this->mvStack.pop();
+    this->rootNode->render(this, cam, cam->vMat);
 }
 
 void scene::renderGUI() {
-    ImGui::Begin("Camera");
-    ImGui::SliderFloat3("position", &this->cameras[this->mainCamera].pos[0], -10.0f, 10.0f);
+    ImGui::Begin("Scene");
+    this->rootNode->renderGUI();
     ImGui::End();
 }
 

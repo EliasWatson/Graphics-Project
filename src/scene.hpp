@@ -29,10 +29,7 @@ struct scene {
     std::vector<camera> cameras;
 
     int mainCamera = 0;
-    entity rootNode;
-
-    // Allocated here to prevent allocation per-frame
-    std::stack<glm::mat4> mvStack;
+    entity* rootNode;
 
     scene(shader_type type);
     void render(float time);

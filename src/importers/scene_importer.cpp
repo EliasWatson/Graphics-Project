@@ -7,6 +7,8 @@
 
 #include <iostream>
 #include <vector>
+#include <string>
+#include <unordered_map>
 
 bool processNode(scene* internalScene, aiNode* node, const aiScene* tempScene, entity* parent);
 bool processCamera(scene* internalScene, aiCamera* inCamera, const aiScene* tempScene);
@@ -14,6 +16,10 @@ bool processLight(scene* internalScene, aiLight* inLight, const aiScene* tempSce
 bool processMaterial(scene* internalScene, aiMaterial* inMaterial, const aiScene* tempScene);
 bool processTextures(std::vector<texture>* textures, std::string baseDirectory, aiMaterial* inMaterial, aiTextureType type, texture::type textureType);
 bool processMesh(scene* internalScene, aiMesh* inMesh, const aiScene* tempScene);
+
+// TODO: Wrap in a struct to avoid globals
+std::unordered_map<std::string, camera*> cameraNames;
+std::unordered_map<std::string, light*> lightNames;
 
 bool importScene(scene* internalScene, std::string path) {
     Assimp::Importer importer;
@@ -24,6 +30,9 @@ bool importScene(scene* internalScene, std::string path) {
         return true;
     }
     internalScene->baseDirectory = path.substr(0, path.find_last_of('/') + 1);
+
+    cameraNames.clear();
+    lightNames.clear();
 
     bool returnValue = false;
 
@@ -48,26 +57,25 @@ bool processNode(scene* internalScene, aiNode* node, const aiScene* tempScene, e
     bool returnValue = false;
 
     // Create entity
-    entity* e = nullptr;
+    entity* e = new entity();
+    e->parent = parent;
+
     if(parent == nullptr) {
-        internalScene->rootNode = entity();
-        e = &internalScene->rootNode;
+        internalScene->rootNode = e;
     } else {
-        parent->children.push_back(entity());
-        e = &parent->children[parent->children.size() - 1];
+        parent->children.push_back(e);
     }
+
+    // Set name
+    e->name = std::string(node->mName.C_Str());
 
     // Copy transform
     e->modelMatrix = convertMat4(node->mTransformation);
+    e->pos = e->modelMatrix[3];
 
-    // Handle camera node
-    if(strcmp(node->mName.C_Str(), "Camera") == 0) {
-        glm::mat4 t_mat = e->modelMatrix;
-        glm::vec3 pos = t_mat[3];
-        internalScene->cameras[internalScene->mainCamera].pos = pos;
-    } else if (strcmp(node->mName.C_Str(), "Point") == 0) {
-        internalScene->lights[0].pos = e->modelMatrix[3];
-    }
+    // Handle camera & light nodes
+    if(cameraNames.count(e->name) > 0) cameraNames.at(e->name)->parentEntity = e;
+    if(lightNames.count(e->name) > 0) lightNames.at(e->name)->parentEntity = e;
 
     // Import meshes
     for(unsigned int i = 0; i < node->mNumMeshes; ++i) {
@@ -93,6 +101,8 @@ bool processCamera(scene* internalScene, aiCamera* inCamera, const aiScene* temp
     cam.clipFar = inCamera->mClipPlaneFar;
 
     internalScene->cameras.push_back(cam);
+    cameraNames.emplace(std::string(inCamera->mName.C_Str()), &internalScene->cameras[internalScene->cameras.size() - 1]);
+
     return false;
 }
 
@@ -102,12 +112,13 @@ bool processLight(scene* internalScene, aiLight* inLight, const aiScene* tempSce
     // TODO: Different light types
     // TODO: Light strengths
 
-    l.pos = convertVec3to4(inLight->mPosition);
     l.ambient = convertVec3to4(inLight->mColorAmbient);
     l.diffuse = convertVec3to4(inLight->mColorDiffuse);
     l.specular = convertVec3to4(inLight->mColorSpecular);
 
     internalScene->lights.push_back(l);
+    lightNames.emplace(std::string(inLight->mName.C_Str()), &internalScene->lights[internalScene->lights.size() - 1]);
+
     return false;
 }
 

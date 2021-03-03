@@ -6,6 +6,7 @@
 #include <stack>
 #include <vector>
 #include <cmath>
+#include <chrono>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -16,6 +17,9 @@
 #include "util.hpp"
 #include "scene.hpp"
 #include "importers/scene_importer.hpp"
+
+// Constants
+const double fpsUpdateFrequency = 100.0; // In milliseconds
 
 // Globals
 scene* mainScene = nullptr;
@@ -47,20 +51,62 @@ int main() {
     ImGui_ImplOpenGL3_Init("#version 430");
     ImGui::StyleColorsDark();
 
+    // Setup performance overlay options
+    ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoDecoration
+        | ImGuiWindowFlags_AlwaysAutoResize
+        | ImGuiWindowFlags_NoSavedSettings
+        | ImGuiWindowFlags_NoFocusOnAppearing
+        | ImGuiWindowFlags_NoNav
+        | ImGuiWindowFlags_NoMove;
+
     // Render
     glfwSwapInterval(1);
     init(window);
 
+    ImGuiViewport* viewport;
+
+    std::chrono::steady_clock::time_point timeLastRender, timeTemp;
+    double timeToUpdate = 0.0, lastFrametime, tempFrametime;
+
     while(!glfwWindowShouldClose(window)) {
+        // Calculate frametime
+        timeTemp = std::chrono::steady_clock::now();
+        tempFrametime = double(std::chrono::duration_cast<std::chrono::nanoseconds>(timeTemp - timeLastRender).count()) * 0.000001;
+
+        timeToUpdate -= tempFrametime;
+        if(timeToUpdate < 0.0) {
+            timeToUpdate = fpsUpdateFrequency;
+            lastFrametime = tempFrametime;
+        }
+
+        timeLastRender = timeTemp;
+
+        // Initialize ImGui
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame(); 
 
+        // Render scene
         display(window, glfwGetTime());
 
+        // Create performance overlay
+        viewport = ImGui::GetMainViewport();
+        ImGui::SetNextWindowPos(ImVec2(viewport->WorkPos.x + 10.0f, viewport->WorkPos.y + 10.0f), ImGuiCond_Always, ImVec2(0.0f, 0.0f));
+        ImGui::SetNextWindowBgAlpha(0.35f);
+
+        if(ImGui::Begin("Performance", NULL, windowFlags)) {
+            ImGui::Text("Performance");
+            ImGui::Separator();
+            ImGui::Text("FPS: %.02f", float(1000.0 / lastFrametime));
+            ImGui::Text("Frametime: %.02f ms", float(lastFrametime));
+        }
+        ImGui::End();
+
+        // Render ImGui
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
+        // Draw frame to screen & check input
         glfwSwapBuffers(window);
         glfwPollEvents();
     }

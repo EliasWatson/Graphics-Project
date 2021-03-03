@@ -2,17 +2,26 @@
 
 #include "mesh.hpp"
 #include "scene.hpp"
+#include "camera.hpp"
 
-int entity::updateMatrixStack(std::stack<glm::mat4>* matrixStack) {
-    matrixStack->push(matrixStack->top());
-    matrixStack->top() *= this->modelMatrix;
+#include <imgui.h>
 
-    // Return number of matrices added to the stack
-    return 1;
+glm::mat4 entity::applyLocalTransform(glm::mat4 inMat) {
+    this->modelMatrix[3] = this->pos;
+    return inMat * this->modelMatrix;
 }
 
-void entity::render(scene* s, camera* cam) {
-    int matAdded = this->updateMatrixStack(&s->mvStack);
+void entity::updateWorldPosition(glm::mat4 inMat) {
+    glm::mat4 localMat = this->applyLocalTransform(inMat);
+    this->worldPos = localMat[3];
+
+    for(entity* e : this->children) {
+        e->updateWorldPosition(localMat);
+    }
+}
+
+void entity::render(scene* s, camera* cam, glm::mat4 parentMat) {
+    glm::mat4 localMat = this->applyLocalTransform(parentMat);
 
     for(int meshIndex : this->meshIndices) {
         mesh* m = &s->meshes[meshIndex];
@@ -23,15 +32,54 @@ void entity::render(scene* s, camera* cam) {
             m->invertBackface
         }, {
             cam->pMat,
-            s->mvStack.top(),
+            localMat,
             glm::mat4(1.0), // TODO
             0.0f
         }, s->lightData);
     }
 
-    for(entity child : this->children) {
-        child.render(s, cam);
+    for(entity* child : this->children) {
+        child->render(s, cam, localMat);
     }
+}
 
-    for(int i = 0; i < matAdded; ++i) s->mvStack.pop();
+void entity::renderGUI() {
+    if(ImGui::TreeNode(this->name.c_str())) {
+        for(entity* child : this->children) {
+            child->renderGUI();
+        }
+
+        ImGui::DragFloat3("Position", &this->pos[0]);
+        ImGui::DragFloat3("World Position", &this->worldPos[0]);
+
+        if(this->parent != nullptr) {
+            if(ImGui::Button("Delete")) {
+                this->parent->killChild(this);
+            }
+        }
+
+        ImGui::TreePop();
+    }
+}
+
+void entity::killChild(entity* child) {
+    child->destroy();
+    delete child;
+
+    auto iter = this->children.begin();
+    while(iter != this->children.end()) {
+        if(*iter == child) {
+            this->children.erase(iter);
+            iter = this->children.begin();
+        } else {
+            iter++;
+        }
+    }
+}
+
+void entity::destroy() {
+    for(entity* e : this->children) {
+        e->destroy();
+        delete e;
+    }
 }

@@ -1,10 +1,12 @@
 #ifndef H_CAMERA
 #define H_CAMERA
 
+#include "entity.hpp"
+
 #include <glm/glm.hpp>
 
 struct camera {
-    glm::vec3 pos;
+    entity* parentEntity;
     glm::mat4 pMat, vMat;
     int width, height;
     float fov, aspect;
