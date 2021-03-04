@@ -1,5 +1,9 @@
 # Time Log
-**Total Time: 47 Hours**
+**Total Time: 49 Hours**
+
+## 2021-03-04
+**2 Hours**
+- Added camera movement
 
 ## 2021-03-03
 **5 Hours**

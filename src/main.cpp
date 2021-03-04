@@ -6,7 +6,6 @@
 #include <stack>
 #include <vector>
 #include <cmath>
-#include <chrono>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -19,15 +18,21 @@
 #include "importers/scene_importer.hpp"
 
 // Constants
-const double fpsUpdateFrequency = 100.0; // In milliseconds
+const double fpsUpdateFrequency = 0.1; // In seconds
+const double cameraSpeed = 2.5;
+const double lookSensitivity = 0.1;
 
 // Globals
 scene* mainScene = nullptr;
+bool mouseEnabled = false;
+double lastMouseX, lastMouseY;
 
 // Prototypes
 void init(GLFWwindow* window);
 void window_resize(GLFWwindow* window, int width, int height);
 void display(GLFWwindow* window, double currentTime);
+void processInput(GLFWwindow* window, double deltaTime);
+void processMouse(GLFWwindow* window, double x, double y);
 
 // Methods
 int main() {
@@ -60,26 +65,29 @@ int main() {
         | ImGuiWindowFlags_NoMove;
 
     // Render
-    glfwSwapInterval(1);
+    glfwSwapInterval(0);
     init(window);
 
     ImGuiViewport* viewport;
 
-    std::chrono::steady_clock::time_point timeLastRender, timeTemp;
-    double timeToUpdate = 0.0, lastFrametime, tempFrametime;
+    double lastFrame = 0.0, currentFrame;
+    double deltaTime, guiDeltaTime;
+    double timeToUpdate = 0.0;
 
     while(!glfwWindowShouldClose(window)) {
         // Calculate frametime
-        timeTemp = std::chrono::steady_clock::now();
-        tempFrametime = double(std::chrono::duration_cast<std::chrono::nanoseconds>(timeTemp - timeLastRender).count()) * 0.000001;
+        currentFrame = glfwGetTime();
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
 
-        timeToUpdate -= tempFrametime;
+        timeToUpdate -= deltaTime;
         if(timeToUpdate < 0.0) {
             timeToUpdate = fpsUpdateFrequency;
-            lastFrametime = tempFrametime;
+            guiDeltaTime = deltaTime;
         }
 
-        timeLastRender = timeTemp;
+        // Process input
+        processInput(window, deltaTime);
 
         // Initialize ImGui
         ImGui_ImplOpenGL3_NewFrame();
@@ -97,8 +105,8 @@ int main() {
         if(ImGui::Begin("Performance", NULL, windowFlags)) {
             ImGui::Text("Performance");
             ImGui::Separator();
-            ImGui::Text("FPS: %.02f", float(1000.0 / lastFrametime));
-            ImGui::Text("Frametime: %.02f ms", float(lastFrametime));
+            ImGui::Text("FPS: %.02f", float(1.0 / guiDeltaTime));
+            ImGui::Text("Frametime: %.02f ms", float(guiDeltaTime * 1000.0f));
         }
         ImGui::End();
 
@@ -123,13 +131,19 @@ int main() {
 
 void init(GLFWwindow* window) {
     mainScene = new scene(scene::DEFAULT);
-    importScene(mainScene, "../../assets/scenes/dragon_scene/dragon_scene.gltf");
+    importScene(mainScene, "../../assets/scenes/dragon_scene/dragon_scene.gltf", SCENE_IMPORT_CAMERA_PARENT);
+
+    mainScene->rootNode->updateWorldPosition(glm::mat4(1.0f));
+    camera* cam = &mainScene->cameras[mainScene->mainCamera];
+    //cam->forward = glm::normalize(glm::vec3(cam->parentEntity->worldPos) * -1.0f);
 
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);
 
     window_resize(window, width, height);
     glfwSetWindowSizeCallback(window, window_resize);
+
+    glfwSetCursorPosCallback(window, processMouse);
 }
 
 void window_resize(GLFWwindow* window, int width, int height) {
@@ -146,5 +160,57 @@ void display(GLFWwindow* window, double currentTime) {
     if(mainScene != nullptr) {
         mainScene->render(currentTime);
         mainScene->renderGUI();
+    }
+}
+
+void processInput(GLFWwindow* window, double deltaTime) {
+    camera* cam = &mainScene->cameras[mainScene->mainCamera];
+    glm::vec3 camUp = glm::vec3(0.0f, 1.0f, 0.0f);
+    glm::vec3 camSide = glm::normalize(glm::cross(cam->direction, camUp));
+
+    float speed = float(cameraSpeed * deltaTime);
+
+    if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) cam->parentEntity->pos += glm::vec4(cam->direction * speed, 0.0f);
+    if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) cam->parentEntity->pos -= glm::vec4(cam->direction * speed, 0.0f);
+
+    if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) cam->parentEntity->pos += glm::vec4(camSide * speed, 0.0f);
+    if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) cam->parentEntity->pos -= glm::vec4(camSide * speed, 0.0f);
+
+    if(glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) cam->parentEntity->pos += glm::vec4(camUp * speed, 0.0f);
+    if(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) cam->parentEntity->pos -= glm::vec4(camUp * speed, 0.0f);
+
+    if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) glfwSetWindowShouldClose(window, 1);
+
+    static bool lastMousePressed = false;
+    bool mousePressed = (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS);
+
+    if(!lastMousePressed && mousePressed) {
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        mouseEnabled = true;
+    } else if(lastMousePressed && !mousePressed) {
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        mouseEnabled = false;
+    }
+
+    lastMousePressed = mousePressed;
+}
+
+void processMouse(GLFWwindow* window, double x, double y) {
+    double xOffset = x - lastMouseX;
+    double yOffset = y - lastMouseY;
+
+    lastMouseX = x;
+    lastMouseY = y;
+
+    if(mouseEnabled) {
+        xOffset *= lookSensitivity;
+        yOffset *= lookSensitivity;
+
+        camera* cam = &mainScene->cameras[mainScene->mainCamera];
+        cam->yaw += float(xOffset);
+        cam->pitch -= float(yOffset);
+
+        if(cam->pitch >  89.0f) cam->pitch =  89.0f;
+        if(cam->pitch < -89.0f) cam->pitch = -89.0f;
     }
 }

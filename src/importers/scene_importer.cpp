@@ -10,18 +10,18 @@
 #include <string>
 #include <unordered_map>
 
-bool processNode(scene* internalScene, aiNode* node, const aiScene* tempScene, entity* parent);
-bool processCamera(scene* internalScene, aiCamera* inCamera, const aiScene* tempScene);
-bool processLight(scene* internalScene, aiLight* inLight, const aiScene* tempScene);
-bool processMaterial(scene* internalScene, aiMaterial* inMaterial, const aiScene* tempScene);
-bool processTextures(std::vector<texture>* textures, std::string baseDirectory, aiMaterial* inMaterial, aiTextureType type, texture::type textureType);
-bool processMesh(scene* internalScene, aiMesh* inMesh, const aiScene* tempScene);
+bool processNode(scene* internalScene, aiNode* node, const aiScene* tempScene, entity* parent, int options);
+bool processCamera(scene* internalScene, aiCamera* inCamera, const aiScene* tempScene, int options);
+bool processLight(scene* internalScene, aiLight* inLight, const aiScene* tempScene, int options);
+bool processMaterial(scene* internalScene, aiMaterial* inMaterial, const aiScene* tempScene, int options);
+bool processTextures(std::vector<texture>* textures, std::string baseDirectory, aiMaterial* inMaterial, aiTextureType type, texture::type textureType, int options);
+bool processMesh(scene* internalScene, aiMesh* inMesh, const aiScene* tempScene, int options);
 
 // TODO: Wrap in a struct to avoid globals
 std::unordered_map<std::string, camera*> cameraNames;
 std::unordered_map<std::string, light*> lightNames;
 
-bool importScene(scene* internalScene, std::string path) {
+bool importScene(scene* internalScene, std::string path, int options) {
     Assimp::Importer importer;
     const aiScene* tempScene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
 
@@ -37,23 +37,23 @@ bool importScene(scene* internalScene, std::string path) {
     bool returnValue = false;
 
     for(unsigned int i = 0; i < tempScene->mNumCameras; ++i) {
-        returnValue = returnValue || processCamera(internalScene, tempScene->mCameras[i], tempScene);
+        returnValue = returnValue || processCamera(internalScene, tempScene->mCameras[i], tempScene, options);
     }
 
     for(unsigned int i = 0; i < tempScene->mNumLights; ++i) {
-        returnValue = returnValue || processLight(internalScene, tempScene->mLights[i], tempScene);
+        returnValue = returnValue || processLight(internalScene, tempScene->mLights[i], tempScene, options);
     }
 
     for(unsigned int i = 0; i < tempScene->mNumMaterials; ++i) {
-        returnValue = returnValue || processMaterial(internalScene, tempScene->mMaterials[i], tempScene);
+        returnValue = returnValue || processMaterial(internalScene, tempScene->mMaterials[i], tempScene, options);
     }
 
-    returnValue = returnValue || processNode(internalScene, tempScene->mRootNode, tempScene, nullptr);
+    returnValue = returnValue || processNode(internalScene, tempScene->mRootNode, tempScene, nullptr, options);
 
     return returnValue;
 }
 
-bool processNode(scene* internalScene, aiNode* node, const aiScene* tempScene, entity* parent) {
+bool processNode(scene* internalScene, aiNode* node, const aiScene* tempScene, entity* parent, int options) {
     bool returnValue = false;
 
     // Create entity
@@ -73,25 +73,25 @@ bool processNode(scene* internalScene, aiNode* node, const aiScene* tempScene, e
     e->setModelMatrix(convertMat4(node->mTransformation));
 
     // Handle camera & light nodes
-    if(cameraNames.count(e->name) > 0) cameraNames.at(e->name)->parentEntity = e;
+    if(cameraNames.count(e->name) > 0) cameraNames.at(e->name)->parentEntity = (options & SCENE_IMPORT_CAMERA_PARENT) ? e->parent : e;
     if(lightNames.count(e->name) > 0) lightNames.at(e->name)->parentEntity = e;
 
     // Import meshes
     for(unsigned int i = 0; i < node->mNumMeshes; ++i) {
         aiMesh* mesh = tempScene->mMeshes[node->mMeshes[i]];
-        returnValue = returnValue || processMesh(internalScene, mesh, tempScene);
+        returnValue = returnValue || processMesh(internalScene, mesh, tempScene, options);
         e->meshIndices.push_back(internalScene->meshes.size() - 1);
     }
 
     // Process children
     for(unsigned int i = 0; i < node->mNumChildren; ++i) {
-        returnValue = returnValue || processNode(internalScene, node->mChildren[i], tempScene, e);
+        returnValue = returnValue || processNode(internalScene, node->mChildren[i], tempScene, e, options);
     }
 
     return returnValue;
 }
 
-bool processCamera(scene* internalScene, aiCamera* inCamera, const aiScene* tempScene) {
+bool processCamera(scene* internalScene, aiCamera* inCamera, const aiScene* tempScene, int options) {
     camera cam;
 
     cam.fov = glm::degrees(inCamera->mHorizontalFOV);
@@ -105,7 +105,7 @@ bool processCamera(scene* internalScene, aiCamera* inCamera, const aiScene* temp
     return false;
 }
 
-bool processLight(scene* internalScene, aiLight* inLight, const aiScene* tempScene) {
+bool processLight(scene* internalScene, aiLight* inLight, const aiScene* tempScene, int options) {
     light l;
 
     // TODO: Different light types
@@ -121,19 +121,19 @@ bool processLight(scene* internalScene, aiLight* inLight, const aiScene* tempSce
     return false;
 }
 
-bool processMaterial(scene* internalScene, aiMaterial* inMaterial, const aiScene* tempScene) {
+bool processMaterial(scene* internalScene, aiMaterial* inMaterial, const aiScene* tempScene, int options) {
     material mat(internalScene->shaderProgram);
 
     mat.textures = std::vector<texture>();
-    processTextures(&mat.textures, internalScene->baseDirectory, inMaterial, aiTextureType_DIFFUSE, texture::ALBEDO);
+    processTextures(&mat.textures, internalScene->baseDirectory, inMaterial, aiTextureType_DIFFUSE, texture::ALBEDO, options);
     // processTextures(&mat.textures, internalScene->baseDirectory, inMaterial, aiTextureType_SPECULAR, "specular");
-    processTextures(&mat.textures, internalScene->baseDirectory, inMaterial, aiTextureType_NORMALS, texture::NORMAL);
+    processTextures(&mat.textures, internalScene->baseDirectory, inMaterial, aiTextureType_NORMALS, texture::NORMAL, options);
 
     internalScene->materials.push_back(mat);
     return false;
 }
 
-bool processTextures(std::vector<texture>* textures, std::string baseDirectory, aiMaterial* inMaterial, aiTextureType type, texture::type textureType) {
+bool processTextures(std::vector<texture>* textures, std::string baseDirectory, aiMaterial* inMaterial, aiTextureType type, texture::type textureType, int options) {
     bool returnValue = false;
 
     for(unsigned int i = 0; i < inMaterial->GetTextureCount(type); ++i) {
@@ -149,7 +149,7 @@ bool processTextures(std::vector<texture>* textures, std::string baseDirectory, 
     return returnValue;
 }
 
-bool processMesh(scene* internalScene, aiMesh* inMesh, const aiScene* tempScene) {
+bool processMesh(scene* internalScene, aiMesh* inMesh, const aiScene* tempScene, int options) {
     std::vector<float> positions;
     std::vector<float> uvs;
     std::vector<float> normals;

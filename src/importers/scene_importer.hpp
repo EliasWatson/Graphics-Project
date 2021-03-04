@@ -9,6 +9,8 @@
 
 #include "../scene.hpp"
 
-bool importScene(scene* internalScene, std::string path);
+#define SCENE_IMPORT_CAMERA_PARENT (1)
+
+bool importScene(scene* internalScene, std::string path, int options);
 
 #endif
