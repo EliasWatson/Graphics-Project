@@ -5,10 +5,22 @@
 #include "camera.hpp"
 
 #include <imgui.h>
+#include <glm/ext/matrix_transform.hpp>
+
+void entity::setModelMatrix(glm::mat4 inMat) {
+    this->scale = glm::vec4(inMat[0].length(), inMat[1].length(), inMat[2].length(), 1.0f);
+    inMat *= glm::scale(glm::mat4(1.0f), 1.0f / glm::vec3(this->scale));
+
+    this->pos = inMat[3];
+
+    // TODO: Extract rotation
+
+    this->modelMatrix = inMat;
+}
 
 glm::mat4 entity::applyLocalTransform(glm::mat4 inMat) {
     this->modelMatrix[3] = this->pos;
-    return inMat * this->modelMatrix;
+    return inMat * this->modelMatrix * glm::scale(glm::mat4(1.0f), glm::vec3(this->scale));
 }
 
 void entity::updateWorldPosition(glm::mat4 inMat) {
@@ -50,7 +62,8 @@ void entity::renderGUI() {
         }
 
         ImGui::DragFloat3("Position", &this->pos[0]);
-        ImGui::DragFloat3("World Position", &this->worldPos[0]);
+        ImGui::DragFloat3("Scale", &this->scale[0]);
+        ImGui::DragFloat3("World Position", &this->worldPos[0], ImGuiSliderFlags_NoInput);
 
         if(this->parent != nullptr) {
             if(ImGui::Button("Delete")) {

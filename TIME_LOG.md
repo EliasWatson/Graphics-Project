@@ -1,11 +1,12 @@
 # Time Log
-**Total Time: 46 Hours**
+**Total Time: 47 Hours**
 
 ## 2021-03-03
-**4 Hours**
+**5 Hours**
 - Added performance overlay
 - Implemented camera & light entity parenting
 - Added GUI to control position of entities
+- Added scale option
 
 ## 2021-03-02
 **1 Hours**

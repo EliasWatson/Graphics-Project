@@ -12,7 +12,7 @@ struct entity {
     std::string name;
 
     glm::vec4 pos, worldPos;
-    glm::mat4 modelMatrix;
+    glm::vec4 scale;
 
     std::vector<int> meshIndices;
     
@@ -21,6 +21,7 @@ struct entity {
 
     entity() { }
 
+    void setModelMatrix(glm::mat4 inMat);
     glm::mat4 applyLocalTransform(glm::mat4 inMat);
     void updateWorldPosition(glm::mat4 inMat);
 
@@ -29,6 +30,9 @@ struct entity {
 
     void killChild(entity* child);
     void destroy();
+
+private:
+    glm::mat4 modelMatrix;
 };
 
 #endif

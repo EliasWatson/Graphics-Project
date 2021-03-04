@@ -70,8 +70,7 @@ bool processNode(scene* internalScene, aiNode* node, const aiScene* tempScene, e
     e->name = std::string(node->mName.C_Str());
 
     // Copy transform
-    e->modelMatrix = convertMat4(node->mTransformation);
-    e->pos = e->modelMatrix[3];
+    e->setModelMatrix(convertMat4(node->mTransformation));
 
     // Handle camera & light nodes
     if(cameraNames.count(e->name) > 0) cameraNames.at(e->name)->parentEntity = e;
