@@ -26,6 +26,7 @@ const double lookSensitivity = 0.1;
 scene* mainScene = nullptr;
 bool mouseEnabled = false;
 double lastMouseX, lastMouseY;
+double frameTimeSum = 0.0, frameCount = 0.0;
 
 // Prototypes
 void init(GLFWwindow* window);
@@ -84,6 +85,11 @@ int main() {
         if(timeToUpdate < 0.0) {
             timeToUpdate = fpsUpdateFrequency;
             guiDeltaTime = deltaTime;
+
+            if(currentFrame > 5.0) {
+                frameTimeSum += deltaTime;
+                frameCount += 1.0;
+            }
         }
 
         // Process input
@@ -106,7 +112,9 @@ int main() {
             ImGui::Text("Performance");
             ImGui::Separator();
             ImGui::Text("FPS: %.02f", float(1.0 / guiDeltaTime));
+            ImGui::Text("Avg FPS: %.02f", float(frameCount / frameTimeSum));
             ImGui::Text("Frametime: %.02f ms", float(guiDeltaTime * 1000.0f));
+            ImGui::Text("Avg Frametime: %.02f ms", float((frameTimeSum / frameCount) * 1000.0f));
         }
         ImGui::End();
 
@@ -158,7 +166,7 @@ void display(GLFWwindow* window, double currentTime) {
 
     // Render scene
     if(mainScene != nullptr) {
-        mainScene->render(currentTime);
+        mainScene->render(float(currentTime));
         mainScene->renderGUI();
     }
 }
