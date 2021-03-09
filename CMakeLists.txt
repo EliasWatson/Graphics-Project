@@ -1,7 +1,11 @@
 cmake_minimum_required(VERSION 3.1)
 project(Graphics_Project)
 
-include_directories(lib/imgui lib/imgui/backends)
+include_directories(
+    lib/imgui
+    lib/imgui/backends
+    lib/glm
+)
 
 add_executable(Graphics_Project
     lib/imgui/imgui.cpp
