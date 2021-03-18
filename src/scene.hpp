@@ -12,6 +12,7 @@
 #include "light.hpp"
 #include "texture.hpp"
 #include "camera.hpp"
+#include "environment.hpp"
 
 struct scene {
     enum shader_type {
@@ -20,6 +21,7 @@ struct scene {
 
     shader shaderProgram;
     material::light_data lightData;
+    environment env;
     std::string baseDirectory;
 
     std::vector<texture> textures;

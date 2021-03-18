@@ -2,13 +2,15 @@
 
 #include <glm/gtc/type_ptr.hpp>
 
-void material::render(model_data md, params p, light_data l) {
+void material::render(model_data md, params p, light_data l, environment env) {
     // Load shader
     this->shaderProgram.use(md.vbo);
 
     // Load textures
     texture::clearTextureContrib(this);
     for(texture tex : this->textures) tex.loadTexture(this);
+    env.irradiance.loadTexture(this);
+    env.reflection.loadTexture(this);
     glActiveTexture(GL_TEXTURE0);
 
     // Copy to uniforms
@@ -26,6 +28,8 @@ void material::render(model_data md, params p, light_data l) {
     this->shaderProgram.setVec4("diffuse_color",  this->diffuse);
     this->shaderProgram.setVec4("specular_color", this->specular);
     this->shaderProgram.setFloat("shininess_factor", this->shininess);
+
+    this->shaderProgram.setFloat("environment_intensity", env.intensity);
 
     // Setup options
     glEnable(GL_DEPTH_TEST);

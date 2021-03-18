@@ -1,5 +1,13 @@
 # Time Log
-**Total Time: 49 Hours**
+**Total Time: 71 Hours**
+
+## 2021-03-18
+**2 Hours**
+- Skybox lighting
+
+## 2021-03-05 through 2021-03-16
+**20 Hours**
+- Reading and research
 
 ## 2021-03-04
 **2 Hours**

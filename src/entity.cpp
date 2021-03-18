@@ -47,7 +47,7 @@ void entity::render(scene* s, camera* cam, glm::mat4 parentMat) {
             localMat,
             glm::mat4(1.0), // TODO
             0.0f
-        }, s->lightData);
+        }, s->lightData, s->env);
     }
 
     for(entity* child : this->children) {

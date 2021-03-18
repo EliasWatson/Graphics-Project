@@ -6,13 +6,17 @@
 
 struct material;
 
-const std::string texture_type_names[3] = {
+const std::string texture_type_names[5] = {
     "albedo",
     "roughness",
-    "normal"
+    "normal",
+    "irradiance",
+    "reflection"
 };
 
-const GLenum texture_gl_types[3] = {
+const GLenum texture_gl_types[5] = {
+    GL_TEXTURE_2D,
+    GL_TEXTURE_2D,
     GL_TEXTURE_2D,
     GL_TEXTURE_2D,
     GL_TEXTURE_2D
@@ -23,6 +27,8 @@ struct texture {
         ALBEDO      = 0,
         ROUGHNESS   = 1,
         NORMAL      = 2,
+        IRRADIANCE  = 3,
+        REFLECTION  = 4,
         NUM_TYPES
     };
 

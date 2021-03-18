@@ -3,6 +3,7 @@
 
 #include "shader.hpp"
 #include "texture.hpp"
+#include "environment.hpp"
 
 #include <GL/glew.h>
 #include <glm/glm.hpp>
@@ -40,7 +41,7 @@ struct material {
     material() { }
     material(shader shaderProgram) : shaderProgram(shaderProgram) { }
 
-    void render(model_data md, params p, light_data l);
+    void render(model_data md, params p, light_data l, environment env);
 };
 
 #endif

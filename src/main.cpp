@@ -16,6 +16,7 @@
 #include "util.hpp"
 #include "scene.hpp"
 #include "importers/scene_importer.hpp"
+#include "importers/texture_importer.hpp"
 
 // Constants
 const double fpsUpdateFrequency = 0.1; // In seconds
@@ -141,9 +142,12 @@ void init(GLFWwindow* window) {
     mainScene = new scene(scene::DEFAULT);
     importScene(mainScene, "../../assets/scenes/dragon_scene/dragon_scene.gltf", SCENE_IMPORT_CAMERA_PARENT);
 
+    importTexture(&mainScene->env.irradiance, "../../assets/textures/environment/oberer_kuhberg_irradiance.png", texture::type::IRRADIANCE);
+    importTexture(&mainScene->env.reflection, "../../assets/textures/environment/oberer_kuhberg_reflection.png", texture::type::REFLECTION);
+    mainScene->env.intensity = 2.0;
+
     mainScene->rootNode->updateWorldPosition(glm::mat4(1.0f));
     camera* cam = &mainScene->cameras[mainScene->mainCamera];
-    //cam->forward = glm::normalize(glm::vec3(cam->parentEntity->worldPos) * -1.0f);
 
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);
