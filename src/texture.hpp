@@ -4,7 +4,7 @@
 #include <GL/glew.h>
 #include <string>
 
-struct material;
+struct shader;
 
 const std::string texture_type_names[5] = {
     "albedo",
@@ -38,8 +38,8 @@ struct texture {
     texture() { }
     texture(GLuint id, type tex_type);
 
-    void loadTexture(material* mat);
-    static void clearTextureContrib(material* mat);
+    void loadTexture(shader* shdr);
+    static void clearTextureContrib(shader* shdr);
 };
 
 #endif

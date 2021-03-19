@@ -30,6 +30,8 @@ add_executable(Graphics_Project
     src/entity.cpp
     src/texture.hpp
     src/texture.cpp
+    src/environment.hpp
+    src/environment.cpp
     src/camera.hpp
     src/camera.cpp
     src/scene.hpp

@@ -7,10 +7,10 @@ void material::render(model_data md, params p, light_data l, environment env) {
     this->shaderProgram.use(md.vbo);
 
     // Load textures
-    texture::clearTextureContrib(this);
-    for(texture tex : this->textures) tex.loadTexture(this);
-    env.irradiance.loadTexture(this);
-    env.reflection.loadTexture(this);
+    texture::clearTextureContrib(&this->shaderProgram);
+    for(texture tex : this->textures) tex.loadTexture(&this->shaderProgram);
+    env.irradiance.loadTexture(&this->shaderProgram);
+    env.reflection.loadTexture(&this->shaderProgram);
     glActiveTexture(GL_TEXTURE0);
 
     // Copy to uniforms

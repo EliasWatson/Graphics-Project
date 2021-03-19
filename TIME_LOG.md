@@ -1,8 +1,8 @@
 # Time Log
-**Total Time: 71 Hours**
+**Total Time: 73 Hours**
 
 ## 2021-03-18
-**2 Hours**
+**4 Hours**
 - Skybox lighting
 
 ## 2021-03-05 through 2021-03-16

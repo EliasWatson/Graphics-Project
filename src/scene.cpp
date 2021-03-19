@@ -51,6 +51,9 @@ void scene::render(float time) {
         }
     }
 
+    // Render sky
+    this->env.render(cam->pMat, cam->vMat);
+
     // Render entities
     this->rootNode->render(this, cam, cam->vMat);
 }
