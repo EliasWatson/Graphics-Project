@@ -48,12 +48,13 @@ vec2 vec3_to_spherical(vec3 dir) {
     return vec2(theta, phi);
 }
 
-float schlick(float f0, float f90, float NoV) {
-    return f0 + ((f90 - f0) * pow(1.0 - NoV, 5.0));
-}
-
-float fresnel(float NoV) {
-    return schlick(0.0, 1.0, NoV);
+vec3 EnvBRDFApprox(vec3 f0, float NoV, float roughness) {
+    vec4 c0 = vec4(-1.0, -0.0275, -0.572, 0.022);
+    vec4 c1 = vec4(1.0, 0.0425, 1.04, -0.04);
+    vec4 r = roughness * c0 + c1;
+    float a004 = min(r.x * r.x, pow(2.0, -9.28 * NoV)) * r.x + r.y;
+    vec2 AB = vec2(-1.04, 1.04) * a004 + r.zw;
+    return f0 * AB.x + AB.y;
 }
 
 void main() {
@@ -67,25 +68,23 @@ void main() {
     normal = normalize(frag_tbn * normal);
     normal = normalize(mix(frag_normal, normal, normal_sampler_contrib));
 
-    vec3 V = -normalize(frag_pos);
+    vec3 V = normalize(frag_pos);
     vec3 R = reflect(V, normal);
 
-    /*
-    for(int i = 0; i < MAX_LIGHTS; ++i) {
-        vec3 L = frag_light_dir[i];
-
-        vec3 ambient = light_ambient[i].rgb * ambient_color.rgb * albedo_tex_color;
-        vec3 diffuse = light_diffuse[i].rgb * diffuse_color.rgb * albedo_tex_color * max(dot(normal, L), 0.0);
-        vec3 specular = light_specular[i].rgb * specular_color.rgb * pow(max(dot(R, L), 0.0), shininess_factor);
-
-        col += ambient + diffuse + specular;
-    }
-    */
-
-    float NoV = max(0.0, dot(V, normal));
+    float NoV = max(0.0, dot(-V, normal));
     vec3 f0 = max(albedo_tex_color * 0.0, 0.04);
     vec3 diffuse = albedo_tex_color * texture(irradiance_sampler, vec3_to_spherical(normal) / (PI * 2.0)).rgb * environment_intensity;
     vec3 specular = textureLod(reflection_sampler, vec3_to_spherical(R) / (PI * 2.0), roughness_tex_factor * 12.0).rgb * environment_intensity;
+    col = mix(diffuse, specular, EnvBRDFApprox(f0, NoV, roughness_tex_factor));
 
-    color = vec4(mix(diffuse, specular, f0 + fresnel(NoV)), 1.0);
+    for(int i = 0; i < MAX_LIGHTS; ++i) {
+        vec3 L = frag_light_dir[i];
+
+        vec3 diffuse = light_diffuse[i].rgb * diffuse_color.rgb * albedo_tex_color * max(dot(normal, L), 0.0);
+        vec3 specular = light_specular[i].rgb * specular_color.rgb * pow(max(dot(R, L), 0.0), shininess_factor);
+
+        col += diffuse + specular;
+    }
+
+    color = vec4(col, 1.0);
 }

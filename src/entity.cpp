@@ -45,7 +45,7 @@ void entity::render(scene* s, camera* cam, glm::mat4 parentMat) {
         }, {
             cam->pMat,
             localMat,
-            glm::mat4(1.0), // TODO
+            glm::transpose(glm::inverse(localMat)),
             0.0f
         }, s->lightData, s->env);
     }
