@@ -37,15 +37,13 @@ out vec4 color;
 
 vec2 vec3_to_spherical(vec3 dir) {
     dir = dir.xzy * vec3(1, 1, -1);
-    if(abs(dir.x) < EPSILON && abs(dir.y) < EPSILON) return vec2(0.0);
+
+    if(abs(dir.x) < EPSILON) dir.x = EPSILON;
+    if(abs(dir.y) < EPSILON) dir.y = EPSILON;
+    if(abs(dir.z) < EPSILON) dir.z = EPSILON;
 
     float theta = atan(dir.y / dir.x);
     float phi = atan(length(dir.xy) / dir.z);
-
-    // TODO: Get rid of branches
-    if(dir.x < 0.0 && dir.y >= 0.0 && abs(theta) < EPSILON) theta = PI;
-    else if(dir.x < 0.0 && dir.y < 0.0 && sign(theta) > 0.0) theta -= PI;
-    else if(dir.x < 0.0 && dir.y > 0.0 && sign(theta) < 0.0) theta += PI;
 
     return vec2(theta, phi);
 }
@@ -69,7 +67,7 @@ void main() {
     normal = normalize(frag_tbn * normal);
     normal = normalize(mix(frag_normal, normal, normal_sampler_contrib));
 
-    vec3 V = normalize(frag_pos);
+    vec3 V = -normalize(frag_pos);
     vec3 R = reflect(V, normal);
 
     /*
