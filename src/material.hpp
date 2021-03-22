@@ -13,6 +13,7 @@
 
 struct material {
     struct model_data {
+        GLuint vao;
         std::vector<GLuint> vbo;
         GLuint indices;
         int vertexCount;
@@ -20,7 +21,8 @@ struct material {
     };
 
     struct params {
-        glm::mat4 perspective, modelView, invModelView;
+        glm::vec4 camPos;
+        glm::mat4 perspective, view, model, invModel;
         float time;
     };
 

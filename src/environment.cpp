@@ -1,5 +1,7 @@
 #include "environment.hpp"
 
+#include <SOIL2.h>
+
 const float skyboxVertices[] = {
     -1.0f,  1.0f, -1.0f,
     -1.0f, -1.0f, -1.0f,
@@ -80,6 +82,15 @@ environment::environment() {
     if(!this->skyboxShader.compiled) exit(EXIT_FAILURE);
 }
 
+void environment::loadTextures(std::string rootDir) {
+    // Load cubemaps
+    GLuint irradianceID, reflectionID;
+    this->loadCubemap(rootDir + "irradiance/", &irradianceID);
+    this->loadCubemap(rootDir + "reflection/", &reflectionID);
+    this->irradiance = texture(irradianceID, texture::type::IRRADIANCE);
+    this->reflection = texture(reflectionID, texture::type::REFLECTION);
+}
+
 void environment::render(glm::mat4 pMat, glm::mat4 vMat) {
     // Load shader
     this->skyboxShader.use(this->skybox.vbo);
@@ -104,4 +115,45 @@ void environment::render(glm::mat4 pMat, glm::mat4 vMat) {
 
     // Cleanup
     glDepthMask(GL_TRUE);
+}
+
+void environment::loadCubemap(std::string texDir, GLuint* id) {
+    glActiveTexture(GL_TEXTURE0);
+    glGenTextures(1, id);
+
+    this->loadCubemapSide(texDir + "px.png", *id, GL_TEXTURE_CUBE_MAP_POSITIVE_X);
+    this->loadCubemapSide(texDir + "nx.png", *id, GL_TEXTURE_CUBE_MAP_NEGATIVE_X);
+    this->loadCubemapSide(texDir + "py.png", *id, GL_TEXTURE_CUBE_MAP_POSITIVE_Y);
+    this->loadCubemapSide(texDir + "ny.png", *id, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y);
+    this->loadCubemapSide(texDir + "pz.png", *id, GL_TEXTURE_CUBE_MAP_POSITIVE_Z);
+    this->loadCubemapSide(texDir + "nz.png", *id, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z);
+
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+}
+
+void environment::loadCubemapSide(std::string path, GLuint id, GLenum side) {
+    glBindTexture(GL_TEXTURE_CUBE_MAP, id);
+
+    int width, height, channels;
+    unsigned char* data = SOIL_load_image(path.c_str(), &width, &height, &channels, 4);
+
+    glTexImage2D(
+        side,
+        0,
+        GL_RGBA,
+        width,
+        height,
+        0,
+        GL_RGBA,
+        GL_UNSIGNED_BYTE,
+        data
+    );
+
+    free(data);
 }

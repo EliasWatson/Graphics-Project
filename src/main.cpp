@@ -140,10 +140,9 @@ int main() {
 
 void init(GLFWwindow* window) {
     mainScene = new scene(scene::DEFAULT);
-    importScene(mainScene, "../../assets/scenes/dragon_scene/dragon_scene.gltf", SCENE_IMPORT_CAMERA_PARENT);
+    importScene(mainScene, "../../assets/scenes/cash_register/cash_register.gltf", SCENE_IMPORT_CAMERA_PARENT);
 
-    importTexture(&mainScene->env.irradiance, "../../assets/textures/environment/oberer_kuhberg_irradiance.png", texture::type::IRRADIANCE);
-    importTexture(&mainScene->env.reflection, "../../assets/textures/environment/oberer_kuhberg_reflection.png", texture::type::REFLECTION);
+    mainScene->env.loadTextures("../../assets/textures/environment/oberer_kuhberg/");
     mainScene->env.intensity = 2.0;
 
     mainScene->rootNode->updateWorldPosition(glm::mat4(1.0f));

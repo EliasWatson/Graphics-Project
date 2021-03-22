@@ -23,7 +23,7 @@ std::unordered_map<std::string, light*> lightNames;
 
 bool importScene(scene* internalScene, std::string path, int options) {
     Assimp::Importer importer;
-    const aiScene* tempScene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
+    const aiScene* tempScene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_CalcTangentSpace);
 
     if(!tempScene || tempScene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !tempScene->mRootNode) {
         fprintf(stderr, "[!] Model Loader: %s\n", importer.GetErrorString());
@@ -126,7 +126,7 @@ bool processMaterial(scene* internalScene, aiMaterial* inMaterial, const aiScene
 
     mat.textures = std::vector<texture>();
     processTextures(&mat.textures, internalScene->baseDirectory, inMaterial, aiTextureType_DIFFUSE, texture::ALBEDO, options);
-    // processTextures(&mat.textures, internalScene->baseDirectory, inMaterial, aiTextureType_SPECULAR, "specular");
+    //processTextures(&mat.textures, internalScene->baseDirectory, inMaterial, aiTextureType_DIFFUSE_ROUGHNESS, texture::ROUGHNESS, options);
     processTextures(&mat.textures, internalScene->baseDirectory, inMaterial, aiTextureType_NORMALS, texture::NORMAL, options);
 
     internalScene->materials.push_back(mat);

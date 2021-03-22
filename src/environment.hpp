@@ -15,7 +15,12 @@ struct environment {
     mesh skybox;
 
     environment();
+    void loadTextures(std::string rootDir);
     void render(glm::mat4 pMat, glm::mat4 vMat);
+
+private:
+    void loadCubemap(std::string texDir, GLuint* id);
+    void loadCubemapSide(std::string path, GLuint id, GLenum side);
 };
 
 #endif

@@ -38,12 +38,15 @@ void entity::render(scene* s, camera* cam, glm::mat4 parentMat) {
     for(int meshIndex : this->meshIndices) {
         mesh* m = &s->meshes[meshIndex];
         s->materials[m->materialIndex].render({
+            m->vao,
             m->vbo,
             m->ebo,
             m->vertexCount,
             m->invertBackface
         }, {
+            cam->parentEntity->worldPos,
             cam->pMat,
+            cam->vMat,
             localMat,
             glm::transpose(glm::inverse(localMat)),
             0.0f

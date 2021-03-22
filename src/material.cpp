@@ -5,6 +5,7 @@
 void material::render(model_data md, params p, light_data l, environment env) {
     // Load shader
     this->shaderProgram.use(md.vbo);
+    glBindVertexArray(md.vao);
 
     // Load textures
     texture::clearTextureContrib(&this->shaderProgram);
@@ -14,10 +15,13 @@ void material::render(model_data md, params p, light_data l, environment env) {
     glActiveTexture(GL_TEXTURE0);
 
     // Copy to uniforms
-    this->shaderProgram.setMat4("proj_matrix", p.perspective);
-    this->shaderProgram.setMat4("mv_matrix",   p.modelView);
-    this->shaderProgram.setMat4("norm_matrix", p.invModelView);
+    this->shaderProgram.setVec4("cam_pos", p.camPos);
     this->shaderProgram.setFloat("tf", p.time);
+
+    this->shaderProgram.setMat4("proj_matrix",      p.perspective);
+    this->shaderProgram.setMat4("view_matrix",      p.view);
+    this->shaderProgram.setMat4("model_matrix",     p.model);
+    this->shaderProgram.setMat4("inv_model_matrix", p.invModel);
 
     this->shaderProgram.setVec4("light_pos",      MAX_LIGHTS, l.pos[0]);
     this->shaderProgram.setVec4("light_ambient",  MAX_LIGHTS, l.ambient[0]);

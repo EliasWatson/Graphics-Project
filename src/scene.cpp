@@ -25,8 +25,8 @@ void scene::render(float time) {
     if(this->mainCamera < 0 || this->mainCamera >= this->cameras.size()) return;
 
     // TODO: Call update function
-    this->lights[0].parentEntity->pos.x = cosf(time) * 2.0f;
-    this->lights[0].parentEntity->pos.z = sinf(time) * 2.0f;
+    // this->lights[0].parentEntity->pos.x = cosf(time) * 2.0f;
+    // this->lights[0].parentEntity->pos.z = sinf(time) * 2.0f;
 
     this->rootNode->updateWorldPosition(glm::mat4(1.0f));
 
@@ -37,9 +37,7 @@ void scene::render(float time) {
     // Update light data
     for(int i = 0; i < MAX_LIGHTS; ++i) {
         if(i < this->lights.size()) {
-            glm::vec4 l_pos = cam->vMat * this->lights[i].parentEntity->worldPos;
-
-            COPY_VEC4(this->lightData.pos[i],      l_pos);
+            COPY_VEC4(this->lightData.pos[i],      this->lights[i].parentEntity->worldPos);
             COPY_VEC4(this->lightData.ambient[i],  this->lights[i].ambient);
             COPY_VEC4(this->lightData.diffuse[i],  this->lights[i].diffuse);
             COPY_VEC4(this->lightData.specular[i], this->lights[i].specular);
@@ -55,7 +53,7 @@ void scene::render(float time) {
     this->env.render(cam->pMat, cam->vMat);
 
     // Render entities
-    this->rootNode->render(this, cam, cam->vMat);
+    this->rootNode->render(this, cam, glm::mat4(1.0f));
 }
 
 void scene::renderGUI() {

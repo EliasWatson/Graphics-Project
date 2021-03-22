@@ -1,5 +1,9 @@
 # Time Log
-**Total Time: 74 Hours**
+**Total Time: 77 Hours**
+
+## 2021-03-22
+**3 Hours**
+- Finished PBR shading
 
 ## 2021-03-19
 **1 Hour**
