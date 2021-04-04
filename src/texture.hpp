@@ -6,17 +6,15 @@
 
 struct shader;
 
-const std::string texture_type_names[6] = {
+const std::string texture_type_names[5] = {
     "albedo",
-    "roughness",
-    "metal",
+    "roughness_metal",
     "normal",
     "irradiance",
     "reflection"
 };
 
-const GLenum texture_gl_types[6] = {
-    GL_TEXTURE_2D,
+const GLenum texture_gl_types[5] = {
     GL_TEXTURE_2D,
     GL_TEXTURE_2D,
     GL_TEXTURE_2D,
@@ -26,12 +24,11 @@ const GLenum texture_gl_types[6] = {
 
 struct texture {
     enum type {
-        ALBEDO      = 0,
-        ROUGHNESS   = 1,
-        METAL       = 2,
-        NORMAL      = 3,
-        IRRADIANCE  = 4,
-        REFLECTION  = 5,
+        ALBEDO          = 0,
+        ROUGHNESS_METAL = 1,
+        NORMAL          = 2,
+        IRRADIANCE      = 3,
+        REFLECTION      = 4,
         NUM_TYPES
     };
 

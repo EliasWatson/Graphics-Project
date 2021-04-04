@@ -143,7 +143,7 @@ void init(GLFWwindow* window) {
     importScene(mainScene, "../../assets/scenes/cash_register/cash_register.gltf", SCENE_IMPORT_CAMERA_PARENT);
 
     mainScene->env.loadTextures("../../assets/textures/environment/oberer_kuhberg/");
-    mainScene->env.intensity = 2.0;
+    mainScene->env.intensity = 1.5;
 
     mainScene->rootNode->updateWorldPosition(glm::mat4(1.0f));
     camera* cam = &mainScene->cameras[mainScene->mainCamera];
@@ -169,6 +169,14 @@ void display(GLFWwindow* window, double currentTime) {
 
     // Render scene
     if(mainScene != nullptr) {
+        // TEMP
+        camera* cam = &mainScene->cameras[mainScene->mainCamera];
+        double animationTime = currentTime * 0.5;
+        cam->parentEntity->pos.x = cos(animationTime) * 2.0;
+        cam->parentEntity->pos.y = 1.0;
+        cam->parentEntity->pos.z = sin(animationTime) * 2.0;
+        cam->yaw = ((fmod(animationTime, 3.1415 * 2.0) / (3.1415 * 2.0)) * 360.0) + 180.0;
+
         mainScene->render(float(currentTime));
         mainScene->renderGUI();
     }

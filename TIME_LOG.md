@@ -1,5 +1,13 @@
 # Time Log
-**Total Time: 77 Hours**
+**Total Time: 96 Hours**
+
+## 2021-03-24 through 2021-04-2
+**15 Hours**
+- Reading and research
+
+## 2021-03-23
+**4 Hours**
+- Tweaked PBR
 
 ## 2021-03-22
 **3 Hours**

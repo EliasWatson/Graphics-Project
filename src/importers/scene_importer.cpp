@@ -4,6 +4,7 @@
 #include "texture_importer.hpp"
 
 #include <glm/ext/matrix_transform.hpp>
+#include <assimp/pbrmaterial.h>
 
 #include <iostream>
 #include <vector>
@@ -128,6 +129,7 @@ bool processMaterial(scene* internalScene, aiMaterial* inMaterial, const aiScene
     processTextures(&mat.textures, internalScene->baseDirectory, inMaterial, aiTextureType_DIFFUSE, texture::ALBEDO, options);
     //processTextures(&mat.textures, internalScene->baseDirectory, inMaterial, aiTextureType_DIFFUSE_ROUGHNESS, texture::ROUGHNESS, options);
     processTextures(&mat.textures, internalScene->baseDirectory, inMaterial, aiTextureType_NORMALS, texture::NORMAL, options);
+    processTextures(&mat.textures, internalScene->baseDirectory, inMaterial, aiTextureType_UNKNOWN, texture::ROUGHNESS_METAL, options);
 
     internalScene->materials.push_back(mat);
     return false;

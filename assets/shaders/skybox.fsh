@@ -1,6 +1,6 @@
 #version 430
 
-layout (binding=5) uniform samplerCube reflection_sampler;
+layout (binding=4) uniform samplerCube reflection_sampler;
 
 in vec3 view_pos;
 

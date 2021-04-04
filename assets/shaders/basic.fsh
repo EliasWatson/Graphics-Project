@@ -6,11 +6,10 @@
 #define PI 3.1415
 
 layout (binding=0) uniform sampler2D albedo_sampler;
-layout (binding=1) uniform sampler2D roughness_sampler;
-layout (binding=2) uniform sampler2D metal_sampler;
-layout (binding=3) uniform sampler2D normal_sampler;
-layout (binding=4) uniform samplerCube irradiance_sampler;
-layout (binding=5) uniform samplerCube reflection_sampler;
+layout (binding=1) uniform sampler2D roughness_metal_sampler;
+layout (binding=2) uniform sampler2D normal_sampler;
+layout (binding=3) uniform samplerCube irradiance_sampler;
+layout (binding=4) uniform samplerCube reflection_sampler;
 
 in vec2 texture_coord;
 in vec3 frag_pos;
@@ -31,8 +30,7 @@ uniform vec4 specular_color;
 uniform float shininess_factor;
 
 uniform float albedo_sampler_contrib;
-uniform float roughness_sampler_contrib;
-uniform float metal_sampler_contrib;
+uniform float roughness_metal_sampler_contrib;
 uniform float normal_sampler_contrib;
 
 uniform float environment_intensity;
@@ -51,9 +49,10 @@ vec3 EnvBRDFApprox(vec3 f0, float NoV, float roughness) {
 void main() {
     vec3 col;
 
-    vec3 albedo_tex_color = mix(vec3(1), texture(albedo_sampler, texture_coord).rgb, albedo_sampler_contrib);
-    float roughness_tex_factor = mix(0.5, 1.0 - texture(roughness_sampler, texture_coord).x, roughness_sampler_contrib);
-    float metal_tex_factor = mix(0.0, texture(metal_sampler, texture_coord).x, metal_sampler_contrib);
+    vec4 albedo_tex_color = mix(vec4(1), texture(albedo_sampler, texture_coord), albedo_sampler_contrib);
+    vec3 roughness_metal_color = mix(vec3(1.0, 0.5, 0.0), texture(roughness_metal_sampler, texture_coord).rgb, roughness_metal_sampler_contrib);
+    float roughness = roughness_metal_color.g;
+    float metalness = roughness_metal_color.b;
 
     vec3 normal = texture(normal_sampler, texture_coord).xyz;
     normal = normal * 2.0 - 1.0;
@@ -64,10 +63,10 @@ void main() {
     vec3 R = reflect(V, normal);
 
     float NoV = max(0.0, dot(V, normal));
-    vec3 f0 = max(albedo_tex_color * metal_tex_factor, 0.04);
-    vec3 diffuse = albedo_tex_color * texture(irradiance_sampler, normal).rgb * environment_intensity;
-    vec3 specular = textureLod(reflection_sampler, R, roughness_tex_factor * 12.0).rgb * environment_intensity;
-    col = mix(diffuse, specular, EnvBRDFApprox(f0, NoV, roughness_tex_factor));
+    vec3 f0 = albedo_tex_color.rgb * max(metalness, 0.04);
+    vec3 diffuse = albedo_tex_color.rgb * texture(irradiance_sampler, normal).rgb * environment_intensity;
+    vec3 specular = mix(vec3(1), albedo_tex_color.rgb, 1.0 - max(0.1, metalness)) * textureLod(reflection_sampler, R, roughness * 12.0).rgb * environment_intensity;
+    col = mix(diffuse, specular, EnvBRDFApprox(f0, NoV, roughness));
 
     /*
     for(int i = 0; i < MAX_LIGHTS; ++i) {
@@ -80,5 +79,5 @@ void main() {
     }
     */
 
-    color = vec4(col, 1.0);
+    color = vec4(col, albedo_tex_color.a);
 }
