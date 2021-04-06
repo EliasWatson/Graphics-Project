@@ -144,6 +144,8 @@ void init(GLFWwindow* window) {
 
     mainScene->env.loadTextures("../../assets/textures/environment/oberer_kuhberg/");
     mainScene->env.intensity = 1.5;
+    mainScene->env.sunDir = glm::normalize(glm::vec3(1.0, 1.0, 1.0));
+    mainScene->env.sunDist = 5.0;
 
     mainScene->rootNode->updateWorldPosition(glm::mat4(1.0f));
     camera* cam = &mainScene->cameras[mainScene->mainCamera];

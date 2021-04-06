@@ -17,8 +17,13 @@ struct environment {
     mesh skybox;
 
     // Shadows
-    glm::vec3 sunDir = glm::vec3(0.0, 1.0, 0.0); // Default to straight up, so under the map
+    glm::vec3 sunDir = glm::vec3(0.0, -1.0, 0.0); // Default to straight up, so under the map
+    float sunDist = 10.0f;
+    float sunFOV = 45.0f;
+    float sunClipNear = 0.1f, sunClipFar = 1000.0f;
+
     shader shadowShader;
+    int shadowWidth, shadowHeight;
     texture shadowTex;
     GLuint shadowBuffer;
     glm::mat4 shadowVMat, shadowPMat;
@@ -33,6 +38,7 @@ struct environment {
     void loadTextures(std::string rootDir);
     void render(glm::mat4 pMat, glm::mat4 vMat);
 
+    void setupShadowBuffer(int width, int height);
     void startShadowmapRender();
     void renderShadowmap(mesh* m, glm::mat4 mMat);
     glm::mat4 getShadowMatrix(glm::mat4 mMat);
@@ -43,8 +49,6 @@ private:
 
     void loadCubemap(std::string texDir, GLuint* id);
     void loadCubemapSide(std::string path, GLuint id, GLenum side);
-
-    void setupShadowBuffer(int width, int height);
 };
 
 #endif

@@ -10,12 +10,14 @@ layout (binding=1) uniform sampler2D roughness_metal_sampler;
 layout (binding=2) uniform sampler2D normal_sampler;
 layout (binding=3) uniform samplerCube irradiance_sampler;
 layout (binding=4) uniform samplerCube reflection_sampler;
+layout (binding=5) uniform sampler2DShadow shadow_sampler;
 
 in vec2 texture_coord;
 in vec3 frag_pos;
 in vec3 frag_normal;
 in mat3 frag_tbn;
 in vec3 frag_light_dir[MAX_LIGHTS];
+in vec4 shadow_pos;
 
 uniform vec4 cam_pos;
 
@@ -54,6 +56,8 @@ void main() {
     float roughness = roughness_metal_color.g;
     float metalness = roughness_metal_color.b;
 
+    float not_in_shadow = textureProj(shadow_sampler, shadow_pos);
+
     vec3 normal = texture(normal_sampler, texture_coord).xyz;
     normal = normal * 2.0 - 1.0;
     normal = normalize(frag_tbn * normal);
@@ -79,5 +83,6 @@ void main() {
     }
     */
 
-    color = vec4(col, albedo_tex_color.a);
+    float shadow_factor = not_in_shadow * 0.5 + 0.5;
+    color = vec4(col * shadow_factor, albedo_tex_color.a);
 }

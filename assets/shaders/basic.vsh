@@ -11,6 +11,7 @@ uniform mat4 proj_matrix;
 uniform mat4 view_matrix;
 uniform mat4 model_matrix;
 uniform mat4 inv_model_matrix;
+uniform mat4 shadow_matrix;
 uniform float tf;
 
 uniform vec4 light_pos[MAX_LIGHTS];
@@ -20,9 +21,12 @@ out vec3 frag_pos;
 out vec3 frag_normal;
 out mat3 frag_tbn;
 out vec3 frag_light_dir[MAX_LIGHTS];
+out vec4 shadow_pos;
 
 void main() {
     gl_Position = proj_matrix * view_matrix * model_matrix * vec4(position, 1.0);
+
+    shadow_pos = shadow_matrix * vec4(position, 1.0);
 
     texture_coord = uv;
     frag_pos = (model_matrix * vec4(position, 1)).xyz;

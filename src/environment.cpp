@@ -1,6 +1,8 @@
 #include "environment.hpp"
 
+#include <glm/gtc/matrix_transform.hpp>
 #include <SOIL2.h>
+#include "util.hpp"
 
 const float skyboxVertices[] = {
     -1.0f,  1.0f, -1.0f,
@@ -66,7 +68,7 @@ environment::environment() {
     this->loadShadowShader();
     this->loadSkyboxShader();
 
-    this->setupShadowBuffer(4096, 4096);
+    this->setupShadowBuffer(1, 1);
 }
 
 void environment::loadTextures(std::string rootDir) {
@@ -79,6 +81,18 @@ void environment::loadTextures(std::string rootDir) {
 }
 
 void environment::startShadowmapRender() {
+    // Update matrices
+    this->shadowVMat = glm::lookAt(
+        this->sunDir * this->sunDist,
+        glm::vec3(0.0f, 0.0f, 0.0f),
+        glm::vec3(0.0f, 1.0f, 0.0f)
+    );
+    this->shadowPMat = glm::perspective(
+        glm::radians(this->sunFOV),
+        float(this->shadowWidth) / float(this->shadowHeight),
+        this->sunClipNear, this->sunClipFar
+    );
+
     // Setup framebuffer
     glBindFramebuffer(GL_FRAMEBUFFER, this->shadowBuffer);
     glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, this->shadowTex.id, 0);
@@ -108,6 +122,10 @@ void environment::render(glm::mat4 pMat, glm::mat4 vMat) {
     glDepthMask(GL_FALSE);
     glFrontFace(GL_CCW);
 
+    // Reduce shadow artifacts
+    glEnable(GL_POLYGON_OFFSET_FILL);
+    glPolygonOffset(2.0f, 4.0f);
+
     // Draw model
     glDrawArrays(GL_TRIANGLES, 0, this->skybox.vertexCount);
 
@@ -128,6 +146,7 @@ void environment::renderShadowmap(mesh* m, glm::mat4 mMat) {
 
     // Setup options
     glEnable(GL_CULL_FACE);
+    glFrontFace(GL_CCW);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
 
@@ -220,7 +239,12 @@ void environment::loadCubemapSide(std::string path, GLuint id, GLenum side) {
 }
 
 void environment::setupShadowBuffer(int width, int height) {
+    this->shadowWidth = width;
+    this->shadowHeight = height;
+
     glGenFramebuffers(1, &this->shadowBuffer);
+
+    // TODO: Delete old data
 
     GLuint shadowTexID;
     glGenTextures(1, &shadowTexID);

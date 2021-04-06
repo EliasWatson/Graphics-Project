@@ -54,6 +54,7 @@ void scene::render(float time) {
     this->rootNode->renderShadowmap(this, glm::mat4(1.0f));
 
     // Setup main render pass
+    glDisable(GL_POLYGON_OFFSET_FILL);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glDrawBuffer(GL_FRONT);
 
@@ -78,6 +79,7 @@ void scene::resize(int width, int height) {
     if(this->mainCamera >= 0 && this->mainCamera < this->cameras.size()) {
         this->cameras[this->mainCamera].resize(width, height);
     }
+    this->env.setupShadowBuffer(width, height);
 }
 
 void scene::loadDefaultShaders() {

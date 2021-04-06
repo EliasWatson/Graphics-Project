@@ -1,9 +1,9 @@
 # Time Log
-**Total Time: 100 Hours**
+**Total Time: 101 Hours**
 
 ## 2021-04-05
-**4 Hours**
-- Working on shadow mapping
+**5 Hours**
+- Implemented basic shadow mapping
 
 ## 2021-03-24 through 2021-04-2
 **15 Hours**
