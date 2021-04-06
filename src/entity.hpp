@@ -25,6 +25,7 @@ struct entity {
     glm::mat4 applyLocalTransform(glm::mat4 inMat);
     void updateWorldPosition(glm::mat4 inMat);
 
+    void renderShadowmap(scene* s, glm::mat4 parentMat);
     void render(scene* s, camera* cam, glm::mat4 parentMat);
     void renderGUI();
 

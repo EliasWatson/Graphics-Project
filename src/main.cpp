@@ -163,10 +163,6 @@ void window_resize(GLFWwindow* window, int width, int height) {
 }
 
 void display(GLFWwindow* window, double currentTime) {
-    // Clear buffers
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glEnable(GL_CULL_FACE);
-
     // Render scene
     if(mainScene != nullptr) {
         // TEMP

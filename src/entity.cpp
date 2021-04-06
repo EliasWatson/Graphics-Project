@@ -32,12 +32,26 @@ void entity::updateWorldPosition(glm::mat4 inMat) {
     }
 }
 
+void entity::renderShadowmap(scene* s, glm::mat4 parentMat) {
+    glm::mat4 localMat = this->applyLocalTransform(parentMat);
+
+    for(int meshIndex : this->meshIndices) {
+        mesh* m = &s->meshes[meshIndex];
+        s->env.renderShadowmap(m, localMat);
+    }
+
+    for(entity* child : this->children) {
+        child->renderShadowmap(s, localMat);
+    }
+}
+
 void entity::render(scene* s, camera* cam, glm::mat4 parentMat) {
     glm::mat4 localMat = this->applyLocalTransform(parentMat);
 
     for(int meshIndex : this->meshIndices) {
         mesh* m = &s->meshes[meshIndex];
         s->materials[m->materialIndex].render({
+            // TODO: Replace this with just the mesh pointer
             m->vao,
             m->vbo,
             m->ebo,

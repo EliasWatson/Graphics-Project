@@ -49,6 +49,18 @@ void scene::render(float time) {
         }
     }
 
+    // Render shadowmap
+    this->env.startShadowmapRender();
+    this->rootNode->renderShadowmap(this, glm::mat4(1.0f));
+
+    // Setup main render pass
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glDrawBuffer(GL_FRONT);
+
+    // Clear the screen
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_CULL_FACE);
+
     // Render sky
     this->env.render(cam->pMat, cam->vMat);
 

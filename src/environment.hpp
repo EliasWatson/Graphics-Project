@@ -8,19 +8,43 @@
 #include "glm/glm.hpp"
 
 struct environment {
+    // Shading
     texture irradiance, reflection;
     float intensity = 1.0f;
 
+    // Skybox
     shader skyboxShader;
     mesh skybox;
+
+    // Shadows
+    glm::vec3 sunDir = glm::vec3(0.0, 1.0, 0.0); // Default to straight up, so under the map
+    shader shadowShader;
+    texture shadowTex;
+    GLuint shadowBuffer;
+    glm::mat4 shadowVMat, shadowPMat;
+    glm::mat4 b = glm::mat4(
+        0.5f, 0.0f, 0.0f, 0.0f,
+        0.0f, 0.5f, 0.0f, 0.0f,
+        0.0f, 0.0f, 0.5f, 0.0f,
+        0.5f, 0.5f, 0.5f, 1.0f
+    );
 
     environment();
     void loadTextures(std::string rootDir);
     void render(glm::mat4 pMat, glm::mat4 vMat);
 
+    void startShadowmapRender();
+    void renderShadowmap(mesh* m, glm::mat4 mMat);
+    glm::mat4 getShadowMatrix(glm::mat4 mMat);
+
 private:
+    void loadSkyboxShader();
+    void loadShadowShader();
+
     void loadCubemap(std::string texDir, GLuint* id);
     void loadCubemapSide(std::string path, GLuint id, GLenum side);
+
+    void setupShadowBuffer(int width, int height);
 };
 
 #endif

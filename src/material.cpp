@@ -12,6 +12,7 @@ void material::render(model_data md, params p, light_data l, environment env) {
     for(texture tex : this->textures) tex.loadTexture(&this->shaderProgram);
     env.irradiance.loadTexture(&this->shaderProgram);
     env.reflection.loadTexture(&this->shaderProgram);
+    env.shadowTex.loadTexture(&this->shaderProgram);
     glActiveTexture(GL_TEXTURE0);
 
     // Copy to uniforms
@@ -22,6 +23,7 @@ void material::render(model_data md, params p, light_data l, environment env) {
     this->shaderProgram.setMat4("view_matrix",      p.view);
     this->shaderProgram.setMat4("model_matrix",     p.model);
     this->shaderProgram.setMat4("inv_model_matrix", p.invModel);
+    this->shaderProgram.setMat4("shadow_matrix",    env.getShadowMatrix(p.model));
 
     this->shaderProgram.setVec4("light_pos",      MAX_LIGHTS, l.pos[0]);
     this->shaderProgram.setVec4("light_ambient",  MAX_LIGHTS, l.ambient[0]);

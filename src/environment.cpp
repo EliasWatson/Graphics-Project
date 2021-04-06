@@ -63,23 +63,10 @@ environment::environment() {
     skybox.ebo = 0;
     skybox.vertexCount = (GLsizei) ((sizeof(skyboxVertices) / sizeof(float)) / 3);
 
-    // Load shader
-    std::vector<shader_source> src;
-    src.push_back({GL_VERTEX_SHADER, "../../assets/shaders/skybox.vsh"});
-    src.push_back({GL_FRAGMENT_SHADER, "../../assets/shaders/skybox.fsh"});
+    this->loadShadowShader();
+    this->loadSkyboxShader();
 
-    std::vector<shader_attribute> attributes;
-    attributes.push_back({
-        GL_ARRAY_BUFFER,    // GLenum bufferType;
-        0,                  // int location;
-        3,                  // int size;
-        0,                  // int stride = 0;
-        GL_FLOAT,           // GLenum type = GL_FLOAT;
-        false               // bool normalize = false;
-    });
-
-    this->skyboxShader = shader(src, attributes);
-    if(!this->skyboxShader.compiled) exit(EXIT_FAILURE);
+    this->setupShadowBuffer(4096, 4096);
 }
 
 void environment::loadTextures(std::string rootDir) {
@@ -89,6 +76,17 @@ void environment::loadTextures(std::string rootDir) {
     this->loadCubemap(rootDir + "reflection/", &reflectionID);
     this->irradiance = texture(irradianceID, texture::type::IRRADIANCE);
     this->reflection = texture(reflectionID, texture::type::REFLECTION);
+}
+
+void environment::startShadowmapRender() {
+    // Setup framebuffer
+    glBindFramebuffer(GL_FRAMEBUFFER, this->shadowBuffer);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, this->shadowTex.id, 0);
+    glDrawBuffer(GL_NONE);
+    glEnable(GL_DEPTH_TEST);
+
+    // Clear framebuffer
+    glClear(GL_DEPTH_BUFFER_BIT);
 }
 
 void environment::render(glm::mat4 pMat, glm::mat4 vMat) {
@@ -115,6 +113,69 @@ void environment::render(glm::mat4 pMat, glm::mat4 vMat) {
 
     // Cleanup
     glDepthMask(GL_TRUE);
+}
+
+void environment::renderShadowmap(mesh* m, glm::mat4 mMat) {
+    // Load shader
+    this->shadowShader.use(m->vbo);
+    glBindVertexArray(m->vao);
+
+    // Calculate Matrices
+    glm::mat4 shadowMVP = this->shadowPMat * this->shadowVMat * mMat;
+
+    // Copy to uniforms
+    this->shadowShader.setMat4("shadowMVP", shadowMVP);
+
+    // Setup options
+    glEnable(GL_CULL_FACE);
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LEQUAL);
+
+    // Draw model
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m->ebo);
+    glDrawElements(GL_TRIANGLES, m->vertexCount, GL_UNSIGNED_INT, 0);
+}
+
+glm::mat4 environment::getShadowMatrix(glm::mat4 mMat) {
+    return this->b * this->shadowPMat * this->shadowVMat * mMat;
+}
+
+void environment::loadSkyboxShader() {
+    std::vector<shader_source> src;
+    src.push_back({GL_VERTEX_SHADER, "../../assets/shaders/skybox.vsh"});
+    src.push_back({GL_FRAGMENT_SHADER, "../../assets/shaders/skybox.fsh"});
+
+    std::vector<shader_attribute> attributes;
+    attributes.push_back({
+        GL_ARRAY_BUFFER,    // GLenum bufferType;
+        0,                  // int location;
+        3,                  // int size;
+        0,                  // int stride = 0;
+        GL_FLOAT,           // GLenum type = GL_FLOAT;
+        false               // bool normalize = false;
+    });
+
+    this->skyboxShader = shader(src, attributes);
+    if(!this->skyboxShader.compiled) exit(EXIT_FAILURE);
+}
+
+void environment::loadShadowShader() {
+    std::vector<shader_source> src;
+    src.push_back({GL_VERTEX_SHADER, "../../assets/shaders/shadow.vsh"});
+    src.push_back({GL_FRAGMENT_SHADER, "../../assets/shaders/shadow.fsh"});
+
+    std::vector<shader_attribute> attributes;
+    attributes.push_back({
+        GL_ARRAY_BUFFER,    // GLenum bufferType;
+        0,                  // int location;
+        3,                  // int size;
+        0,                  // int stride = 0;
+        GL_FLOAT,           // GLenum type = GL_FLOAT;
+        false               // bool normalize = false;
+    });
+
+    this->shadowShader = shader(src, attributes);
+    if(!shadowShader.compiled) exit(EXIT_FAILURE);
 }
 
 void environment::loadCubemap(std::string texDir, GLuint* id) {
@@ -156,4 +217,21 @@ void environment::loadCubemapSide(std::string path, GLuint id, GLenum side) {
     );
 
     free(data);
+}
+
+void environment::setupShadowBuffer(int width, int height) {
+    glGenFramebuffers(1, &this->shadowBuffer);
+
+    GLuint shadowTexID;
+    glGenTextures(1, &shadowTexID);
+    glBindTexture(GL_TEXTURE_2D, shadowTexID);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32,
+        width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+
+    this->shadowTex = texture(shadowTexID, texture::type::SHADOW);
 }
