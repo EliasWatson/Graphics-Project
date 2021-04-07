@@ -18,11 +18,13 @@ bool processMaterial(scene* internalScene, aiMaterial* inMaterial, const aiScene
 bool processTextures(std::vector<texture>* textures, std::string baseDirectory, aiMaterial* inMaterial, aiTextureType type, texture::type textureType, int options);
 bool processMesh(scene* internalScene, aiMesh* inMesh, const aiScene* tempScene, int options);
 
-// TODO: Wrap in a struct to avoid globals
 std::unordered_map<std::string, camera*> cameraNames;
 std::unordered_map<std::string, light*> lightNames;
 
 bool importScene(scene* internalScene, std::string path, int options) {
+    cameraNames.clear();
+    lightNames.clear();
+
     Assimp::Importer importer;
     const aiScene* tempScene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_CalcTangentSpace);
 
@@ -81,7 +83,7 @@ bool processNode(scene* internalScene, aiNode* node, const aiScene* tempScene, e
     for(unsigned int i = 0; i < node->mNumMeshes; ++i) {
         aiMesh* mesh = tempScene->mMeshes[node->mMeshes[i]];
         returnValue = returnValue || processMesh(internalScene, mesh, tempScene, options);
-        e->meshIndices.push_back(internalScene->meshes.size() - 1);
+        e->meshIndices.push_back(int(internalScene->meshes.size()) - 1);
     }
 
     // Process children

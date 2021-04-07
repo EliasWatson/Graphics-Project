@@ -29,8 +29,13 @@ bool mouseEnabled = false;
 double lastMouseX, lastMouseY;
 double frameTimeSum = 0.0, frameCount = 0.0;
 
+char sceneName[128];
+char envName[128];
+
 // Prototypes
 void init(GLFWwindow* window);
+void loadScene(GLFWwindow* window);
+void loadEnvironment();
 void window_resize(GLFWwindow* window, int width, int height);
 void display(GLFWwindow* window, double currentTime);
 void processInput(GLFWwindow* window, double deltaTime);
@@ -139,24 +144,44 @@ int main() {
 }
 
 void init(GLFWwindow* window) {
+    const char tmpSceneName[] = "cash_register";
+    strncpy_s(sceneName, tmpSceneName, sizeof(tmpSceneName));
+
+    const char tmpEnvName[] = "oberer_kuhberg";
+    strncpy_s(envName, tmpEnvName, sizeof(tmpEnvName));
+
+    loadScene(window);
+
+    glfwSetWindowSizeCallback(window, window_resize);
+    glfwSetCursorPosCallback(window, processMouse);
+}
+
+void loadScene(GLFWwindow* window) {
+    if(mainScene != nullptr) {
+        delete mainScene;
+    }
+
     mainScene = new scene(scene::DEFAULT);
-    importScene(mainScene, "../../assets/scenes/cash_register/cash_register.gltf", SCENE_IMPORT_CAMERA_PARENT);
 
-    mainScene->env.loadTextures("../../assets/textures/environment/oberer_kuhberg/");
-    mainScene->env.intensity = 1.5;
-    mainScene->env.sunDir = glm::normalize(glm::vec3(1.0, 1.0, 1.0));
-    mainScene->env.setupShadowBuffer(4096, 4096);
-
-    mainScene->rootNode->updateWorldPosition(glm::mat4(1.0f));
-    camera* cam = &mainScene->cameras[mainScene->mainCamera];
+    std::string sceneNameStr(sceneName);
+    std::string scenePath = "../../assets/scenes/" + sceneNameStr + "/" + sceneNameStr + ".gltf";
+    importScene(mainScene, scenePath, SCENE_IMPORT_CAMERA_PARENT);
 
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);
-
     window_resize(window, width, height);
-    glfwSetWindowSizeCallback(window, window_resize);
 
-    glfwSetCursorPosCallback(window, processMouse);
+    loadEnvironment();
+}
+
+void loadEnvironment() {
+    std::string envNameStr(envName);
+    std::string envPath = "../../assets/textures/environment/" + envNameStr + "/";
+
+    mainScene->env.loadTextures(envPath);
+    mainScene->env.intensity = 1.5;
+    mainScene->env.sunDir = glm::normalize(glm::vec3(1.0, 1.0, 1.0));
+    mainScene->env.setupShadowBuffer(4096, 4096);
 }
 
 void window_resize(GLFWwindow* window, int width, int height) {
@@ -176,7 +201,22 @@ void display(GLFWwindow* window, double currentTime) {
         cam->yaw = ((fmod(animationTime, 3.1415 * 2.0) / (3.1415 * 2.0)) * 360.0) + 180.0;
         */
 
+        // Render scene
         mainScene->render(float(currentTime));
+
+        // Render GUI
+        ImGui::Begin("Loader");
+
+        ImGui::InputText("Scene name", sceneName, sizeof(sceneName) - 1);
+        if(ImGui::Button("Reload scene")) loadScene(window);
+
+        ImGui::Separator();
+
+        ImGui::InputText("Environment name", envName, sizeof(envName) - 1);
+        if(ImGui::Button("Reload environment")) loadEnvironment();
+
+        ImGui::End();
+
         mainScene->renderGUI();
     }
 }

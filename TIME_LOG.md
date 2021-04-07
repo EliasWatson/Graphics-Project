@@ -1,12 +1,13 @@
 # Time Log
-**Total Time: 105 Hours**
+**Total Time: 106 Hours**
 
 ## 2021-04-07
-**4 Hours**
+**5 Hours**
 - Separated shadow resolution from screen resolution
 - Implemented PCF soft shadows
 - Added support for orthographic shadow mapping
 - PCF now changes its pattern every frame, making the pattern less noticeable
+- Added scene & environment switching at runtime
 
 ## 2021-04-05
 **5 Hours**
