@@ -24,6 +24,7 @@ struct material {
         glm::vec4 camPos;
         glm::mat4 perspective, view, model, invModel;
         float time;
+        int screenWidth, screenHeight;
     };
 
     struct light_data {

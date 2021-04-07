@@ -20,6 +20,8 @@ in vec3 frag_light_dir[MAX_LIGHTS];
 in vec4 shadow_pos;
 
 uniform vec4 cam_pos;
+uniform vec2 screen_resolution;
+uniform vec2 shadow_resolution;
 
 uniform vec4 light_pos[MAX_LIGHTS];
 uniform vec4 light_ambient[MAX_LIGHTS];
@@ -48,6 +50,26 @@ vec3 EnvBRDFApprox(vec3 f0, float NoV, float roughness) {
     return f0 * AB.x + AB.y;
 }
 
+float lookupShadow(float ox, float oy) {
+    return textureProj(shadow_sampler, shadow_pos + vec4(
+            (ox * shadow_pos.w) / shadow_resolution.x,
+            (oy * shadow_pos.w) / shadow_resolution.y,
+            -0.0005, 0.0
+        ));
+}
+
+float getShadowFactor(float swidth) {
+    vec2 offset = mod(floor(gl_FragCoord.xy), 2.0) * swidth;
+    float shadow_factor = 0.0;
+
+    shadow_factor += lookupShadow(-1.5 * swidth + offset.x,  1.5 * swidth - offset.y);
+    shadow_factor += lookupShadow(-1.5 * swidth + offset.x, -0.5 * swidth - offset.y);
+    shadow_factor += lookupShadow( 0.5 * swidth + offset.x,  1.5 * swidth - offset.y);
+    shadow_factor += lookupShadow( 0.5 * swidth + offset.x, -0.5 * swidth - offset.y);
+
+    return shadow_factor * 0.25;
+}
+
 void main() {
     vec3 col;
 
@@ -55,8 +77,6 @@ void main() {
     vec3 roughness_metal_color = mix(vec3(1.0, 0.5, 0.0), texture(roughness_metal_sampler, texture_coord).rgb, roughness_metal_sampler_contrib);
     float roughness = roughness_metal_color.g;
     float metalness = roughness_metal_color.b;
-
-    float not_in_shadow = textureProj(shadow_sampler, shadow_pos);
 
     vec3 normal = texture(normal_sampler, texture_coord).xyz;
     normal = normal * 2.0 - 1.0;
@@ -72,6 +92,9 @@ void main() {
     vec3 specular = mix(vec3(1), albedo_tex_color.rgb, 1.0 - max(0.1, metalness)) * textureLod(reflection_sampler, R, roughness * 12.0).rgb * environment_intensity;
     col = mix(diffuse, specular, EnvBRDFApprox(f0, NoV, roughness));
 
+    float not_in_shadow = getShadowFactor(2.5);
+    float shadow_factor = not_in_shadow * 0.5 + 0.5;
+
     /*
     for(int i = 0; i < MAX_LIGHTS; ++i) {
         vec3 L = frag_light_dir[i];
@@ -83,6 +106,5 @@ void main() {
     }
     */
 
-    float shadow_factor = not_in_shadow * 0.5 + 0.5;
     color = vec4(col * shadow_factor, albedo_tex_color.a);
 }

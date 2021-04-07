@@ -45,6 +45,7 @@ struct shader {
 
     void setFloat(const char* name, float val);
     void setVec4(const char* name, glm::vec4 val);
+    void setVec2(const char* name, glm::vec2 val);
     void setMat4(const char* name, glm::mat4 val);
 
     void setFloat(const char* name, GLsizei count, float* val);

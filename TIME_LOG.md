@@ -1,9 +1,10 @@
 # Time Log
-**Total Time: 102 Hours**
+**Total Time: 103 Hours**
 
 ## 2021-04-07
-**1 Hour**
+**2 Hours**
 - Separated shadow resolution from screen resolution
+- Implemented PCF soft shadows
 
 ## 2021-04-05
 **5 Hours**
