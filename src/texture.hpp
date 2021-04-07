@@ -6,15 +6,6 @@
 
 struct shader;
 
-const std::string texture_type_names[6] = {
-    "albedo",
-    "roughness_metal",
-    "normal",
-    "irradiance",
-    "reflection",
-    "shadow"
-};
-
 const GLenum texture_gl_types[6] = {
     GL_TEXTURE_2D,
     GL_TEXTURE_2D,

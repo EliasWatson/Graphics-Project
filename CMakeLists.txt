@@ -16,29 +16,17 @@ add_executable(Graphics_Project
     lib/imgui/backends/imgui_impl_glfw.cpp
 
     src/main.cpp
-    src/util.hpp
     src/util.cpp
-    src/shader.hpp
     src/shader.cpp
-    src/material.hpp
     src/material.cpp
-    src/light.hpp
     src/light.cpp
-    src/mesh.hpp
     src/mesh.cpp
-    src/entity.hpp
     src/entity.cpp
-    src/texture.hpp
     src/texture.cpp
-    src/environment.hpp
     src/environment.cpp
-    src/camera.hpp
     src/camera.cpp
-    src/scene.hpp
     src/scene.cpp
-    src/importers/scene_importer.hpp
     src/importers/scene_importer.cpp
-    src/importers/texture_importer.hpp
     src/importers/texture_importer.cpp
 )
 #set_property(TARGET Graphics_Project PROPERTY CXX_STANDARD 14)
