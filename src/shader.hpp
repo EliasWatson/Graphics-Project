@@ -44,6 +44,7 @@ struct shader {
     void use(std::vector<GLuint> vbo);
 
     void setFloat(const char* name, float val);
+    void setInt(const char* name, int val);
     void setVec4(const char* name, glm::vec4 val);
     void setVec2(const char* name, glm::vec2 val);
     void setMat4(const char* name, glm::mat4 val);

@@ -42,6 +42,11 @@ void shader::setFloat(const char* name, float val) {
     glUniform1f(loc, val);
 }
 
+void shader::setInt(const char* name, int val) {
+    GLuint loc = glGetUniformLocation(this->id, name);
+    glUniform1i(loc, val);
+}
+
 void shader::setVec4(const char* name, glm::vec4 val) {
     GLuint loc = glGetUniformLocation(this->id, name);
     glUniform4fv(loc, 1, glm::value_ptr(val));

@@ -22,6 +22,8 @@ in vec4 shadow_pos;
 uniform vec4 cam_pos;
 uniform vec2 screen_resolution;
 uniform vec2 shadow_resolution;
+uniform float shadow_bias;
+uniform int frame;
 
 uniform vec4 light_pos[MAX_LIGHTS];
 uniform vec4 light_ambient[MAX_LIGHTS];
@@ -54,14 +56,16 @@ float lookupShadow(float ox, float oy) {
     return textureProj(shadow_sampler, shadow_pos + vec4(
             (ox * shadow_pos.w) / shadow_resolution.x,
             (oy * shadow_pos.w) / shadow_resolution.y,
-            -0.0005, 0.0
+            -shadow_bias, 0.0
         ));
 }
 
 float getShadowFactor(float swidth) {
-    vec2 offset = mod(floor(gl_FragCoord.xy), 2.0) * swidth;
-    float shadow_factor = 0.0;
+    int frame_offset = frame % 3;
+    vec2 adj_pos = gl_FragCoord.xy + vec2(frame_offset & 1, (frame_offset >> 1) & 1);
+    vec2 offset = mod(floor(adj_pos), 2.0) * swidth;
 
+    float shadow_factor = 0.0;
     shadow_factor += lookupShadow(-1.5 * swidth + offset.x,  1.5 * swidth - offset.y);
     shadow_factor += lookupShadow(-1.5 * swidth + offset.x, -0.5 * swidth - offset.y);
     shadow_factor += lookupShadow( 0.5 * swidth + offset.x,  1.5 * swidth - offset.y);

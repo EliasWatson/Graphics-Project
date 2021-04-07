@@ -87,11 +87,21 @@ void environment::startShadowmapRender() {
         glm::vec3(0.0f, 0.0f, 0.0f),
         glm::vec3(0.0f, 1.0f, 0.0f)
     );
-    this->shadowPMat = glm::perspective(
-        glm::radians(this->sunFOV),
-        float(this->shadowWidth) / float(this->shadowHeight),
-        this->sunClipNear, this->sunClipFar
-    );
+    if(this->shadowOrtholinear) {
+        this->shadowPMat = glm::ortho(
+            this->shadowSize * -0.5f,
+            this->shadowSize * 0.5f,
+            this->shadowSize * 0.5f,
+            this->shadowSize * -0.5f,
+            this->sunClipNear, this->sunClipFar
+        );
+    } else {
+        this->shadowPMat = glm::perspective(
+            glm::radians(this->sunFOV),
+            float(this->shadowWidth) / float(this->shadowHeight),
+            this->sunClipNear, this->sunClipFar
+        );
+    }
 
     // Setup framebuffer
     glBindFramebuffer(GL_FRAMEBUFFER, this->shadowBuffer);
@@ -125,7 +135,7 @@ void environment::render(glm::mat4 pMat, glm::mat4 vMat) {
 
     // Reduce shadow artifacts
     glEnable(GL_POLYGON_OFFSET_FILL);
-    glPolygonOffset(2.0f, 4.0f);
+    glPolygonOffset(1.0f, 1.0f);
 
     // Draw model
     glDrawArrays(GL_TRIANGLES, 0, this->skybox.vertexCount);
@@ -146,8 +156,7 @@ void environment::renderShadowmap(mesh* m, glm::mat4 mMat) {
     this->shadowShader.setMat4("shadowMVP", shadowMVP);
 
     // Setup options
-    glEnable(GL_CULL_FACE);
-    glFrontFace(GL_CCW);
+    glDisable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
 

@@ -12,7 +12,6 @@ uniform mat4 view_matrix;
 uniform mat4 model_matrix;
 uniform mat4 inv_model_matrix;
 uniform mat4 shadow_matrix;
-uniform float tf;
 
 uniform vec4 light_pos[MAX_LIGHTS];
 

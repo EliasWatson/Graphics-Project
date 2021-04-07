@@ -35,6 +35,9 @@ struct scene {
     int mainCamera = 0;
     entity* rootNode;
 
+    float time;
+    int frame;
+
     scene(shader_type type);
     void render(float time);
     void renderGUI();

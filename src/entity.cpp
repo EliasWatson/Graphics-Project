@@ -63,7 +63,8 @@ void entity::render(scene* s, camera* cam, glm::mat4 parentMat) {
             cam->vMat,
             localMat,
             glm::transpose(glm::inverse(localMat)),
-            0.0f,
+            s->time,
+            s->frame,
             s->screenWidth,
             s->screenHeight
         }, s->lightData, s->env);

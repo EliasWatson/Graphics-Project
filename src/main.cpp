@@ -145,7 +145,6 @@ void init(GLFWwindow* window) {
     mainScene->env.loadTextures("../../assets/textures/environment/oberer_kuhberg/");
     mainScene->env.intensity = 1.5;
     mainScene->env.sunDir = glm::normalize(glm::vec3(1.0, 1.0, 1.0));
-    mainScene->env.sunDist = 5.0;
     mainScene->env.setupShadowBuffer(4096, 4096);
 
     mainScene->rootNode->updateWorldPosition(glm::mat4(1.0f));
@@ -168,12 +167,14 @@ void display(GLFWwindow* window, double currentTime) {
     // Render scene
     if(mainScene != nullptr) {
         // TEMP
+        /*
         camera* cam = &mainScene->cameras[mainScene->mainCamera];
         double animationTime = currentTime * 0.5;
         cam->parentEntity->pos.x = cos(animationTime) * 2.0;
         cam->parentEntity->pos.y = 1.0;
         cam->parentEntity->pos.z = sin(animationTime) * 2.0;
         cam->yaw = ((fmod(animationTime, 3.1415 * 2.0) / (3.1415 * 2.0)) * 360.0) + 180.0;
+        */
 
         mainScene->render(float(currentTime));
         mainScene->renderGUI();

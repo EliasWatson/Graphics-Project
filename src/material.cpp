@@ -17,9 +17,11 @@ void material::render(model_data md, params p, light_data l, environment env) {
 
     // Copy to uniforms
     this->shaderProgram.setVec4("cam_pos", p.camPos);
-    this->shaderProgram.setFloat("tf", p.time);
+    this->shaderProgram.setFloat("time", p.time);
+    this->shaderProgram.setInt("frame", p.frame);
     this->shaderProgram.setVec2("screen_resolution", glm::vec2(p.screenWidth, p.screenHeight));
     this->shaderProgram.setVec2("shadow_resolution", glm::vec2(env.shadowWidth, env.shadowHeight));
+    this->shaderProgram.setFloat("shadow_bias", env.shadowBias);
 
     this->shaderProgram.setMat4("proj_matrix",      p.perspective);
     this->shaderProgram.setMat4("view_matrix",      p.view);

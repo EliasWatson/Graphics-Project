@@ -12,6 +12,9 @@
 const float empty_4f[4] = {0.0, 0.0, 0.0, 1.0};
 
 scene::scene(shader_type type) {
+    this->time = 0.0f;
+    this->frame = 0;
+
     switch(type) {
         case DEFAULT:
         default:
@@ -24,10 +27,10 @@ void scene::render(float time) {
     // If we don't have a camera, we can't render anything
     if(this->mainCamera < 0 || this->mainCamera >= this->cameras.size()) return;
 
-    // TODO: Call update function
-    // this->lights[0].parentEntity->pos.x = cosf(time) * 2.0f;
-    // this->lights[0].parentEntity->pos.z = sinf(time) * 2.0f;
+    // Update time
+    this->time = time;
 
+    // Update object world positions
     this->rootNode->updateWorldPosition(glm::mat4(1.0f));
 
     // Get camera
@@ -68,6 +71,9 @@ void scene::render(float time) {
 
     // Render entities
     this->rootNode->render(this, cam, glm::mat4(1.0f));
+
+    // Update frame counter
+    this->frame++;
 }
 
 void scene::renderGUI() {

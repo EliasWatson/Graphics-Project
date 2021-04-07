@@ -18,8 +18,11 @@ struct environment {
 
     // Shadows
     glm::vec3 sunDir = glm::vec3(0.0, -1.0, 0.0); // Default to straight up, so under the map
+    float shadowSize = 2.0f;
+    float shadowBias = 0.000005f;
+    bool shadowOrtholinear = true;
     float sunDist = 10.0f;
-    float sunFOV = 45.0f;
+    float sunFOV = 15.0f;
     float sunClipNear = 0.1f, sunClipFar = 1000.0f;
 
     shader shadowShader;
