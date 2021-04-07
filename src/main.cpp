@@ -110,6 +110,7 @@ int main() {
         display(window, glfwGetTime());
 
         // Create performance overlay
+        /*
         viewport = ImGui::GetMainViewport();
         ImGui::SetNextWindowPos(ImVec2(viewport->WorkPos.x + 10.0f, viewport->WorkPos.y + 10.0f), ImGuiCond_Always, ImVec2(0.0f, 0.0f));
         ImGui::SetNextWindowBgAlpha(0.35f);
@@ -122,6 +123,16 @@ int main() {
             ImGui::Text("Frametime: %.02f ms", float(guiDeltaTime * 1000.0f));
             ImGui::Text("Avg Frametime: %.02f ms", float((frameTimeSum / frameCount) * 1000.0f));
         }
+        ImGui::End();
+        */
+
+        // Render loader GUI
+        ImGui::Begin("Loader");
+        ImGui::InputText("Scene name", sceneName, sizeof(sceneName) - 1);
+        if(ImGui::Button("Reload scene")) loadScene(window);
+        ImGui::Separator();
+        ImGui::InputText("Environment name", envName, sizeof(envName) - 1);
+        if(ImGui::Button("Reload environment")) loadEnvironment();
         ImGui::End();
 
         // Render ImGui
@@ -201,22 +212,7 @@ void display(GLFWwindow* window, double currentTime) {
         cam->yaw = ((fmod(animationTime, 3.1415 * 2.0) / (3.1415 * 2.0)) * 360.0) + 180.0;
         */
 
-        // Render scene
         mainScene->render(float(currentTime));
-
-        // Render GUI
-        ImGui::Begin("Loader");
-
-        ImGui::InputText("Scene name", sceneName, sizeof(sceneName) - 1);
-        if(ImGui::Button("Reload scene")) loadScene(window);
-
-        ImGui::Separator();
-
-        ImGui::InputText("Environment name", envName, sizeof(envName) - 1);
-        if(ImGui::Button("Reload environment")) loadEnvironment();
-
-        ImGui::End();
-
         mainScene->renderGUI();
     }
 }
@@ -237,7 +233,7 @@ void processInput(GLFWwindow* window, double deltaTime) {
     if(glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) cam->parentEntity->pos += glm::vec4(camUp * speed, 0.0f);
     if(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) cam->parentEntity->pos -= glm::vec4(camUp * speed, 0.0f);
 
-    if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) glfwSetWindowShouldClose(window, 1);
+    //if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) glfwSetWindowShouldClose(window, 1);
 
     static bool lastMousePressed = false;
     bool mousePressed = (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS);

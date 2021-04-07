@@ -23,6 +23,7 @@ uniform vec4 cam_pos;
 uniform vec2 screen_resolution;
 uniform vec2 shadow_resolution;
 uniform float shadow_bias;
+uniform float shadow_blur;
 uniform int frame;
 
 uniform vec4 light_pos[MAX_LIGHTS];
@@ -96,7 +97,7 @@ void main() {
     vec3 specular = mix(vec3(1), albedo_tex_color.rgb, 1.0 - max(0.1, metalness)) * textureLod(reflection_sampler, R, roughness * 12.0).rgb * environment_intensity;
     col = mix(diffuse, specular, EnvBRDFApprox(f0, NoV, roughness));
 
-    float not_in_shadow = getShadowFactor(2.5);
+    float not_in_shadow = getShadowFactor(shadow_blur);
     float shadow_factor = not_in_shadow * 0.5 + 0.5;
 
     /*

@@ -1,2 +1,5 @@
 .vscode/
 build/
+assets/models/
+assets/scenes/
+assets/textures/

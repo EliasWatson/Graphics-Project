@@ -80,6 +80,14 @@ void scene::renderGUI() {
     ImGui::Begin("Scene");
     this->rootNode->renderGUI();
     ImGui::End();
+
+    ImGui::Begin("Environment");
+    ImGui::SliderFloat("Shadowmap Size", &this->env.shadowSize, 1.0, 20.0);
+    ImGui::SliderFloat("Shadowmap Distance", &this->env.sunDist, 1.0, 20.0);
+    ImGui::SliderFloat("Shadow Bias", &this->env.shadowBias, 0.0, 0.01, "%.05f");
+    ImGui::SliderFloat("Shadow Blur", &this->env.shadowBlur, 0.0, 10.0);
+    ImGui::SliderFloat3("Shadow Dir", &this->env.sunDir.x, -1.0f, 1.0f);
+    ImGui::End();
 }
 
 void scene::resize(int width, int height) {

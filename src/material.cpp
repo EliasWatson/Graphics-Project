@@ -22,6 +22,7 @@ void material::render(model_data md, params p, light_data l, environment env) {
     this->shaderProgram.setVec2("screen_resolution", glm::vec2(p.screenWidth, p.screenHeight));
     this->shaderProgram.setVec2("shadow_resolution", glm::vec2(env.shadowWidth, env.shadowHeight));
     this->shaderProgram.setFloat("shadow_bias", env.shadowBias);
+    this->shaderProgram.setFloat("shadow_blur", env.shadowBlur);
 
     this->shaderProgram.setMat4("proj_matrix",      p.perspective);
     this->shaderProgram.setMat4("view_matrix",      p.view);
@@ -44,6 +45,7 @@ void material::render(model_data md, params p, light_data l, environment env) {
     // Setup options
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
+    glDisable(GL_CULL_FACE);
     glFrontFace(md.invertBackface ? GL_CW : GL_CCW);
 
     // Draw model

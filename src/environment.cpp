@@ -83,7 +83,7 @@ void environment::loadTextures(std::string rootDir) {
 void environment::startShadowmapRender() {
     // Update matrices
     this->shadowVMat = glm::lookAt(
-        this->sunDir * this->sunDist,
+        glm::normalize(this->sunDir) * this->sunDist,
         glm::vec3(0.0f, 0.0f, 0.0f),
         glm::vec3(0.0f, 1.0f, 0.0f)
     );

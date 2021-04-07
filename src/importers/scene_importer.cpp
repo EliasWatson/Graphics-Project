@@ -166,13 +166,25 @@ bool processMesh(scene* internalScene, aiMesh* inMesh, const aiScene* tempScene,
         positions.push_back(inMesh->mVertices[i].y);
         positions.push_back(inMesh->mVertices[i].z);
 
-        normals.push_back(inMesh->mNormals[i].x);
-        normals.push_back(inMesh->mNormals[i].y);
-        normals.push_back(inMesh->mNormals[i].z);
+        if(inMesh->mNormals != NULL) {
+            normals.push_back(inMesh->mNormals[i].x);
+            normals.push_back(inMesh->mNormals[i].y);
+            normals.push_back(inMesh->mNormals[i].z);
+        } else {
+            normals.push_back(0.0f);
+            normals.push_back(0.0f);
+            normals.push_back(0.0f);
+        }
 
-        tangents.push_back(inMesh->mTangents[i].x);
-        tangents.push_back(inMesh->mTangents[i].y);
-        tangents.push_back(inMesh->mTangents[i].z);
+        if(inMesh->mTangents != NULL) {
+            tangents.push_back(inMesh->mTangents[i].x);
+            tangents.push_back(inMesh->mTangents[i].y);
+            tangents.push_back(inMesh->mTangents[i].z);
+        } else {
+            tangents.push_back(0.0f);
+            tangents.push_back(0.0f);
+            tangents.push_back(0.0f);
+        }
 
         if(inMesh->mTextureCoords[0]) {
             uvs.push_back(inMesh->mTextureCoords[0][i].x);
