@@ -146,6 +146,7 @@ void init(GLFWwindow* window) {
     mainScene->env.intensity = 1.5;
     mainScene->env.sunDir = glm::normalize(glm::vec3(1.0, 1.0, 1.0));
     mainScene->env.sunDist = 5.0;
+    mainScene->env.setupShadowBuffer(4096, 4096);
 
     mainScene->rootNode->updateWorldPosition(glm::mat4(1.0f));
     camera* cam = &mainScene->cameras[mainScene->mainCamera];
@@ -160,7 +161,6 @@ void init(GLFWwindow* window) {
 }
 
 void window_resize(GLFWwindow* window, int width, int height) {
-    glViewport(0, 0, width, height);
     if(mainScene != nullptr) mainScene->resize(width, height);
 }
 

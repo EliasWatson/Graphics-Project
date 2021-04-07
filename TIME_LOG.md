@@ -1,5 +1,9 @@
 # Time Log
-**Total Time: 101 Hours**
+**Total Time: 102 Hours**
+
+## 2021-04-07
+**1 Hour**
+- Separated shadow resolution from screen resolution
 
 ## 2021-04-05
 **5 Hours**

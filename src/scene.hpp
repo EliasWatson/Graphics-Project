@@ -19,6 +19,8 @@ struct scene {
         DEFAULT
     };
 
+    int screenWidth, screenHeight;
+
     shader shaderProgram;
     material::light_data lightData;
     environment env;

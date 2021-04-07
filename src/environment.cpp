@@ -98,6 +98,7 @@ void environment::startShadowmapRender() {
     glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, this->shadowTex.id, 0);
     glDrawBuffer(GL_NONE);
     glEnable(GL_DEPTH_TEST);
+    glViewport(0, 0, this->shadowWidth, this->shadowHeight);
 
     // Clear framebuffer
     glClear(GL_DEPTH_BUFFER_BIT);

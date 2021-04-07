@@ -57,6 +57,7 @@ void scene::render(float time) {
     glDisable(GL_POLYGON_OFFSET_FILL);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glDrawBuffer(GL_FRONT);
+    glViewport(0, 0, this->screenWidth, this->screenHeight);
 
     // Clear the screen
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -76,10 +77,11 @@ void scene::renderGUI() {
 }
 
 void scene::resize(int width, int height) {
+    this->screenWidth = width;
+    this->screenHeight = height;
     if(this->mainCamera >= 0 && this->mainCamera < this->cameras.size()) {
         this->cameras[this->mainCamera].resize(width, height);
     }
-    this->env.setupShadowBuffer(width, height);
 }
 
 void scene::loadDefaultShaders() {
