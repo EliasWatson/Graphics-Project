@@ -1,5 +1,16 @@
 # Time Log
-**Total Time: 106 Hours**
+**Total Time: 148 Hours**
+
+## 2021-05-01
+**2 Hours**
+- Wrote summary essay
+
+## 2021-04-08 through 2021-04-30
+**40 Hours**
+- Finished Reading "Computer Graphics Programming in OpenGL with C++, Second Edition"
+- Read parts of "GPU Gems" 1, 2, & 3
+- Read parts of "GPU Zen"
+- Researched deferred rendering, post-processing effects (SSAO, HDAO, Bloom, SSR, etc), and global illumination
 
 ## 2021-04-07
 **5 Hours**
